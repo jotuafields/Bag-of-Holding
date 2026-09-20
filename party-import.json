@@ -1,0 +1,2201 @@
+{
+ "app": "hivekeeper",
+ "version": 2,
+ "characters": [
+  {
+   "abilities": {
+    "cha": 10,
+    "con": 14,
+    "dex": 12,
+    "int": 10,
+    "str": 10,
+    "wis": 16
+   },
+   "acBase": 11,
+   "acDex": true,
+   "acDexCap": "",
+   "alignment": "",
+   "attacks": [
+    {
+     "ability": "str",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d6",
+     "dmgType": "bludgeoning",
+     "id": "wvbsufx3ju4n",
+     "name": "Quarterstaff",
+     "notes": "Versatile (1d8)",
+     "prof": true
+    }
+   ],
+   "background": "",
+   "bonuses": [],
+   "breath": {
+    "ancestry": "Emerald",
+    "dmgType": "Psychic",
+    "on": true,
+    "shape": "15 ft cone or 30 ft line"
+   },
+   "classes": [
+    {
+     "caster": "full",
+     "hitDie": 8,
+     "id": "zhkhr2fxju4n",
+     "level": 11,
+     "name": "Druid",
+     "subclass": "Circle of the Hive"
+    }
+   ],
+   "coins": {
+    "cp": 0,
+    "ep": 0,
+    "gp": 15,
+    "pp": 0,
+    "sp": 0
+   },
+   "conditions": [],
+   "death": {
+    "f": 0,
+    "s": 0
+   },
+   "defenses": [
+    {
+     "active": true,
+     "id": "18upkc2uju4n",
+     "kind": "resist",
+     "nonmagical": false,
+     "source": "Draconic Resistance",
+     "type": "psychic"
+    }
+   ],
+   "features": [
+    {
+     "desc": "Replace one attack. Damage and DC are worked out on the Combat tab.",
+     "id": "myo0icubju4n",
+     "max": "PB",
+     "name": "Breath Weapon",
+     "recharge": "long",
+     "source": "Gem Dragonborn",
+     "used": 0
+    },
+    {
+     "desc": "Resistance to psychic damage.",
+     "id": "mlp97dr0ju4n",
+     "max": "",
+     "name": "Draconic Resistance",
+     "recharge": "none",
+     "source": "Gem Dragonborn",
+     "used": 0
+    },
+    {
+     "desc": "Telepathy 30 ft with creatures that know a language.",
+     "id": "qfrz17afju4n",
+     "max": "",
+     "name": "Psionic Mind",
+     "recharge": "none",
+     "source": "Gem Dragonborn",
+     "used": 0
+    },
+    {
+     "desc": "Bonus action: spectral wings, flying speed equal to walking speed for 1 minute.",
+     "id": "2z6e32xhju4n",
+     "max": "1",
+     "name": "Gem Flight",
+     "recharge": "long",
+     "source": "Gem Dragonborn (level 5)",
+     "used": 0
+    },
+    {
+     "desc": "Change the max uses and recharge to match the rules your table uses.",
+     "id": "bl7lsshyju4n",
+     "max": "2",
+     "name": "Wild Shape",
+     "recharge": "short",
+     "source": "Druid",
+     "used": 0
+    },
+    {
+     "desc": "Enter each subclass feature as its own entry so uses and recharges are tracked.",
+     "id": "bztwn2wwju4n",
+     "max": "",
+     "name": "Circle of the Hive features",
+     "recharge": "none",
+     "source": "Add from her sourcebook",
+     "used": 0
+    }
+   ],
+   "hdUsed": 0,
+   "hp": {
+    "cur": 96,
+    "max": 96,
+    "temp": 0
+   },
+   "hpLog": [],
+   "id": "hnk9xha7ju4n",
+   "initBonus": 0,
+   "inventory": [
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "fuumt0uyju4n",
+     "name": "Leather armor",
+     "notes": "AC 11 + Dex",
+     "qty": 1,
+     "weight": 10
+    },
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "72l95483ju4n",
+     "name": "Druidic focus",
+     "notes": "",
+     "qty": 1,
+     "weight": 0
+    },
+    {
+     "attuned": false,
+     "equipped": false,
+     "id": "5oil573rju4n",
+     "name": "Explorer's pack",
+     "notes": "",
+     "qty": 1,
+     "weight": 59
+    }
+   ],
+   "look": {
+    "accent": "#E2A93A",
+    "font": "Fraunces",
+    "portrait": {
+     "asset": "",
+     "data": "",
+     "kind": "",
+     "pos": 8
+    },
+    "primary": "#1E6B4B",
+    "theme": "emerald"
+   },
+   "name": "Akra",
+   "notes": {
+    "backstory": "",
+    "languages": "Common, Draconic",
+    "profs": "Light and medium armor, shields; clubs, daggers, darts, javelins, maces, quarterstaffs, scimitars, sickles, slings, spears; herbalism kit",
+    "session": "",
+    "traits": ""
+   },
+   "player": "",
+   "prepOverride": "",
+   "quirks": [
+    {
+     "id": "ixf25qqn7al9",
+     "key": true,
+     "source": "",
+     "text": ""
+    }
+   ],
+   "race": "Dragonborn",
+   "saves": {
+    "int": true,
+    "wis": true
+   },
+   "senses": [],
+   "shield": false,
+   "skills": {
+    "nature": 1,
+    "perception": 1
+   },
+   "slotOverride": "",
+   "slotsUsed": {},
+   "speed": 30,
+   "spellAbility": "wis",
+   "spells": [
+    {
+     "always": false,
+     "comp": "V, S",
+     "conc": false,
+     "desc": "",
+     "dur": "Instant",
+     "id": "r0747zupju4n",
+     "level": 0,
+     "name": "Druidcraft",
+     "prepared": true,
+     "range": "30 ft",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 action"
+    },
+    {
+     "always": false,
+     "comp": "V, S, M",
+     "conc": false,
+     "desc": "",
+     "dur": "Instant",
+     "id": "t17vaobxju4n",
+     "level": 1,
+     "name": "Goodberry",
+     "prepared": true,
+     "range": "Touch",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 action"
+    }
+   ],
+   "trickster": {
+    "boon": "",
+    "god": "Kubazan",
+    "notes": "",
+    "since": "",
+    "trait": ""
+   },
+   "updated": 1789607809859,
+   "xp": 0,
+   "owner": ""
+  },
+  {
+   "abilities": {
+    "cha": 10,
+    "con": 16,
+    "dex": 20,
+    "int": 8,
+    "str": 12,
+    "wis": 12
+   },
+   "acAbil2": "con",
+   "acBase": 10,
+   "acDex": true,
+   "acDexCap": "",
+   "alignment": "",
+   "attacks": [
+    {
+     "ability": "finesse",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d6",
+     "dmgType": "slashing",
+     "id": "s01fbkmtqs7q",
+     "name": "Shmeeter (main hand)",
+     "notes": "Scimitar: finesse, light. While miffed, first hit each turn adds Divine Fury: 1d6 + 5 necrotic or radiant.",
+     "prof": true
+    },
+    {
+     "ability": "finesse",
+     "addMod": false,
+     "bonus": 0,
+     "dmg": "1d6",
+     "dmgType": "slashing",
+     "id": "cuqgjx4gousj",
+     "name": "Shmeeter (off hand)",
+     "notes": "Bonus action after attacking with the main-hand shmeeter. No modifier to damage unless she has the Two-Weapon Fighting style.",
+     "prof": true
+    }
+   ],
+   "background": "",
+   "bonuses": [
+    {
+     "active": false,
+     "id": "frts9qldw3h3",
+     "label": "Miffed rage damage",
+     "tag": "miffed",
+     "target": "damage",
+     "value": 3
+    }
+   ],
+   "breath": {
+    "ancestry": "",
+    "dmgType": "",
+    "on": false,
+    "shape": ""
+   },
+   "classes": [
+    {
+     "caster": "none",
+     "hitDie": 12,
+     "id": "zhyta2whhsc0",
+     "level": 11,
+     "name": "Barbarian",
+     "subclass": "Path of the Zealot"
+    }
+   ],
+   "coins": {
+    "cp": 0,
+    "ep": 0,
+    "gp": 10,
+    "pp": 0,
+    "sp": 0
+   },
+   "conditions": [],
+   "death": {
+    "f": 0,
+    "s": 0
+   },
+   "defenses": [
+    {
+     "active": false,
+     "id": "26ru4cdodioh",
+     "kind": "resist",
+     "nonmagical": false,
+     "source": "Miffed (rage)",
+     "tag": "miffed",
+     "type": "bludgeoning"
+    },
+    {
+     "active": false,
+     "id": "t2c06fo64hfx",
+     "kind": "resist",
+     "nonmagical": false,
+     "source": "Miffed (rage)",
+     "tag": "miffed",
+     "type": "piercing"
+    },
+    {
+     "active": false,
+     "id": "giv7kn055dc3",
+     "kind": "resist",
+     "nonmagical": false,
+     "source": "Miffed (rage)",
+     "tag": "miffed",
+     "type": "slashing"
+    }
+   ],
+   "features": [
+    {
+     "desc": "Bonus action. Lasts 1 minute. Advantage on Strength checks and saves, bonus rage damage, resistance to bludgeoning, piercing and slashing. Check with the DM how rage damage works with her Dex-based shmeeters.",
+     "id": "yt58s2ja2cs7",
+     "max": "4",
+     "name": "Miffed (Rage)",
+     "recharge": "long",
+     "source": "Barbarian",
+     "tag": "miffed",
+     "used": 0
+    },
+    {
+     "desc": "An extra rage when a Large or larger creature attacks one of her companions.",
+     "id": "d4aqp0lc0d5g",
+     "max": "1",
+     "name": "Kubazan's Fury",
+     "recharge": "long",
+     "source": "Trickster god: Kubazan",
+     "tag": "miffed",
+     "used": 0
+    },
+    {
+     "desc": "While miffed, the first creature she hits with a weapon attack each turn takes an extra 1d6 + 5 necrotic or radiant damage (her choice).",
+     "id": "oair4fbyn5dl",
+     "max": "",
+     "name": "Divine Fury",
+     "recharge": "none",
+     "source": "Path of the Zealot",
+     "used": 0
+    },
+    {
+     "desc": "Spells that restore her to life don't need material components.",
+     "id": "reypd0w3uqmz",
+     "max": "",
+     "name": "Warrior of the Gods",
+     "recharge": "none",
+     "source": "Path of the Zealot",
+     "used": 0
+    },
+    {
+     "desc": "On her first attack of the turn she can attack recklessly: advantage on Strength-based melee attacks this turn, but attacks against her have advantage until her next turn. Check with the DM how this applies to her Dex-based attacks.",
+     "id": "gmm4yvq1c60y",
+     "max": "",
+     "name": "Reckless Attack",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    },
+    {
+     "desc": "Advantage on Dex saves against effects she can see, while not blinded, deafened or incapacitated.",
+     "id": "w1d1b8kyfvee",
+     "max": "",
+     "name": "Danger Sense",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    },
+    {
+     "desc": "Without armor, AC is 10 + Dex + Con. Already worked into her AC.",
+     "id": "r78silgw3wtz",
+     "max": "",
+     "name": "Unarmored Defense",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    },
+    {
+     "desc": "Once per turn, when she damages a creature larger than her, add her proficiency bonus to the damage.",
+     "id": "j6xtkjca4e0a",
+     "max": "PB",
+     "name": "Fury of the Small",
+     "recharge": "long",
+     "source": "Goblin",
+     "used": 0
+    },
+    {
+     "desc": "Disengage or Hide as a bonus action.",
+     "id": "d31nz9srjvmt",
+     "max": "",
+     "name": "Nimble Escape",
+     "recharge": "none",
+     "source": "Goblin",
+     "used": 0
+    },
+    {
+     "desc": "Advantage on saves against being charmed.",
+     "id": "n4u0z7f8wz7k",
+     "max": "",
+     "name": "Fey Ancestry",
+     "recharge": "none",
+     "source": "Goblin",
+     "used": 0
+    },
+    {
+     "desc": "Attack twice when taking the Attack action.",
+     "id": "67dheb43w3wk",
+     "max": "",
+     "name": "Extra Attack",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    },
+    {
+     "desc": "+10 ft speed without heavy armor. Already in her speed.",
+     "id": "dd1hlpajkznl",
+     "max": "",
+     "name": "Fast Movement",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    },
+    {
+     "desc": "Advantage on initiative; can act while surprised if she gets miffed first.",
+     "id": "8s4wbop1mzth",
+     "max": "",
+     "name": "Feral Instinct",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    },
+    {
+     "desc": "Roll one extra weapon damage die on a critical hit.",
+     "id": "5d3gah19arr2",
+     "max": "",
+     "name": "Brutal Critical",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    },
+    {
+     "desc": "While miffed, reroll a failed saving throw once per rage.",
+     "id": "grm3j7khzrdw",
+     "max": "",
+     "name": "Fanatical Focus",
+     "recharge": "none",
+     "source": "Path of the Zealot",
+     "used": 0
+    },
+    {
+     "desc": "Bonus action: up to 10 allies within 60 ft gain advantage on attacks and saves until her next turn.",
+     "id": "c2z2wmoo6d5a",
+     "max": "1",
+     "name": "Zealous Presence",
+     "recharge": "long",
+     "source": "Path of the Zealot",
+     "used": 0
+    },
+    {
+     "desc": "While miffed, dropping to 0 HP lets her make a DC 10 Con save (DC +5 each time) to drop to 1 HP instead.",
+     "id": "hj6sn5iqt11x",
+     "max": "",
+     "name": "Relentless Rage",
+     "recharge": "none",
+     "source": "Barbarian",
+     "used": 0
+    }
+   ],
+   "hdUsed": 0,
+   "hp": {
+    "cur": 115,
+    "max": 115,
+    "temp": 0
+   },
+   "hpLog": [],
+   "id": "gak6akbf00yjg6l",
+   "initBonus": 0,
+   "inventory": [
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "g55flek5wrol",
+     "name": "Shmeeter (scimitar)",
+     "notes": "Her twin scimitars.",
+     "qty": 2,
+     "weight": 3
+    },
+    {
+     "attuned": false,
+     "equipped": false,
+     "id": "r9lfgq0rnc4y",
+     "name": "Explorer's pack",
+     "notes": "",
+     "qty": 1,
+     "weight": 59
+    }
+   ],
+   "look": {
+    "accent": "#F28C28",
+    "font": "Pirata One",
+    "portrait": {
+     "asset": "",
+     "data": "",
+     "kind": "",
+     "pos": 30
+    },
+    "primary": "#9B2335",
+    "theme": "ruby"
+   },
+   "name": "Gak",
+   "notes": {
+    "backstory": "",
+    "languages": "Common, Goblin",
+    "profs": "Light and medium armor, shields; simple and martial weapons",
+    "session": "",
+    "traits": ""
+   },
+   "player": "",
+   "prepOverride": "",
+   "quirks": [
+    {
+     "id": "gedtpfjfz533",
+     "key": true,
+     "source": "Sonofabitch",
+     "text": "Calls raging getting \"miffed\""
+    },
+    {
+     "id": "cyuaktbok8py",
+     "key": true,
+     "source": "Shmeeters",
+     "text": "Calls her scimitars \"shmeeters\""
+    }
+   ],
+   "race": "Goblin",
+   "saves": {
+    "con": true,
+    "str": true
+   },
+   "senses": [
+    {
+     "active": true,
+     "id": "1w17vg8tsyt4",
+     "label": "",
+     "range": 60,
+     "source": "Goblin",
+     "type": "Darkvision"
+    }
+   ],
+   "shield": false,
+   "skills": {
+    "athletics": 1,
+    "intimidation": 1,
+    "perception": 1,
+    "stealth": 1
+   },
+   "slotOverride": "",
+   "slotsUsed": {},
+   "speed": 40,
+   "spellAbility": "wis",
+   "spells": [],
+   "trickster": {
+    "boon": "An extra rage when a Large creature attacks one of her companions.",
+    "god": "Kubazan",
+    "notes": "",
+    "since": "",
+    "trait": ""
+   },
+   "updated": 1789609487425,
+   "xp": 0,
+   "owner": ""
+  },
+  {
+   "abilities": {
+    "cha": 20,
+    "con": 16,
+    "dex": 14,
+    "int": 10,
+    "str": 10,
+    "wis": 12
+   },
+   "acAbil2": "",
+   "acBase": 13,
+   "acDex": true,
+   "acDexCap": "",
+   "alignment": "",
+   "attacks": [
+    {
+     "ability": "str",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d6",
+     "dmgType": "piercing",
+     "id": "eio5cqt535ko",
+     "name": "Bite",
+     "notes": "Natural weapon",
+     "prof": true
+    },
+    {
+     "ability": "spell",
+     "addMod": false,
+     "bonus": 0,
+     "dmg": "3d10",
+     "dmgType": "fire",
+     "id": "m58fgiirvjap",
+     "name": "Fire Bolt",
+     "notes": "Cantrip, 120 ft",
+     "prof": true
+    }
+   ],
+   "background": "",
+   "bonuses": [],
+   "breath": {
+    "ancestry": "",
+    "dmgType": "",
+    "on": false,
+    "shape": ""
+   },
+   "classes": [
+    {
+     "caster": "full",
+     "hitDie": 6,
+     "id": "qrddmj3fa8tf",
+     "level": 11,
+     "name": "Sorcerer",
+     "subclass": "Draconic Bloodline"
+    }
+   ],
+   "coins": {
+    "cp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0,
+    "sp": 0
+   },
+   "conditions": [],
+   "death": {
+    "f": 0,
+    "s": 0
+   },
+   "defenses": [],
+   "features": [
+    {
+     "desc": "Spend to create spell slots or fuel metamagic.",
+     "id": "lfxctncsbpcd",
+     "max": "LEVEL",
+     "name": "Sorcery Points",
+     "recharge": "long",
+     "source": "Font of Magic",
+     "used": 0
+    },
+    {
+     "desc": "Four options known by level 10. List them here.",
+     "id": "p3eiw8uo9b4k",
+     "max": "",
+     "name": "Metamagic",
+     "recharge": "none",
+     "source": "Sorcerer",
+     "used": 0
+    },
+    {
+     "desc": "+1 max HP per sorcerer level and AC 13 + Dex without armor. Already worked in.",
+     "id": "fel3guxntcch",
+     "max": "",
+     "name": "Draconic Resilience",
+     "recharge": "none",
+     "source": "Draconic Bloodline",
+     "used": 0
+    },
+    {
+     "desc": "Add Cha to one damage roll of spells matching the dragon ancestor's element. Spend 1 sorcery point for resistance to that element for 1 hour. Set the element here.",
+     "id": "yplvqk2zius5",
+     "max": "",
+     "name": "Elemental Affinity",
+     "recharge": "none",
+     "source": "Draconic Bloodline",
+     "used": 0
+    },
+    {
+     "desc": "Bonus action bite; on a hit, gain temp HP equal to proficiency bonus.",
+     "id": "0k9ep1frby1u",
+     "max": "PB",
+     "name": "Hungry Jaws",
+     "recharge": "long",
+     "source": "Lizardfolk",
+     "used": 0
+    },
+    {
+     "desc": "Hold breath for up to 15 minutes. Swimming speed 30 ft.",
+     "id": "5lzvuq48rxcz",
+     "max": "",
+     "name": "Hold Breath",
+     "recharge": "none",
+     "source": "Lizardfolk",
+     "used": 0
+    },
+    {
+     "desc": "Proficiency in two skills from the lizardfolk list.",
+     "id": "x93knyaqgec1",
+     "max": "",
+     "name": "Nature's Intuition",
+     "recharge": "none",
+     "source": "Lizardfolk",
+     "used": 0
+    }
+   ],
+   "hdUsed": 0,
+   "hp": {
+    "cur": 90,
+    "max": 90,
+    "temp": 0
+   },
+   "hpLog": [],
+   "id": "dargsorc11",
+   "initBonus": 0,
+   "inventory": [],
+   "look": {
+    "accent": "#C9C27A",
+    "font": "Uncial Antiqua",
+    "portrait": {
+     "asset": "",
+     "data": "",
+     "kind": "",
+     "pos": 30
+    },
+    "primary": "#4E5B31",
+    "theme": "grave"
+   },
+   "name": "Darg",
+   "notes": {
+    "backstory": "",
+    "languages": "Common, Draconic",
+    "profs": "Daggers, darts, slings, quarterstaffs, light crossbows",
+    "session": "",
+    "traits": ""
+   },
+   "pactShort": false,
+   "player": "",
+   "prepOverride": "12",
+   "quirks": [],
+   "race": "Lizardfolk",
+   "saves": {
+    "cha": true,
+    "con": true
+   },
+   "senses": [],
+   "shield": false,
+   "skills": {
+    "arcana": 1,
+    "intimidation": 1,
+    "perception": 1,
+    "stealth": 1
+   },
+   "slotOverride": "",
+   "slotsUsed": {},
+   "speed": 30,
+   "spellAbility": "cha",
+   "spells": [
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "nu8yswyb6252",
+     "level": 0,
+     "name": "Fire Bolt",
+     "prepared": true,
+     "range": "120 ft",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 action"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "oodwcchfmbaf",
+     "level": 1,
+     "name": "Shield",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 reaction"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "dna5wfjmne49",
+     "level": 3,
+     "name": "Counterspell",
+     "prepared": true,
+     "range": "60 ft",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 reaction"
+    }
+   ],
+   "trickster": {
+    "boon": "",
+    "god": "",
+    "notes": "",
+    "since": "",
+    "trait": ""
+   },
+   "updated": 1789609487425,
+   "xp": 0,
+   "owner": ""
+  },
+  {
+   "abilities": {
+    "cha": 8,
+    "con": 14,
+    "dex": 20,
+    "int": 10,
+    "str": 10,
+    "wis": 14
+   },
+   "acAbil2": "",
+   "acBase": 12,
+   "acDex": true,
+   "acDexCap": "",
+   "alignment": "",
+   "attacks": [
+    {
+     "ability": "dex",
+     "addMod": true,
+     "bonus": 2,
+     "dmg": "1d8",
+     "dmgType": "piercing",
+     "id": "t2duij1su16p",
+     "name": "Longbow",
+     "notes": "150/600 ft. +2 Archery included.",
+     "prof": true
+    },
+    {
+     "ability": "dex",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d6",
+     "dmgType": "piercing",
+     "id": "wssyqtr7z57j",
+     "name": "Shortsword",
+     "notes": "Finesse, light",
+     "prof": true
+    },
+    {
+     "ability": "dex",
+     "addMod": false,
+     "bonus": 0,
+     "dmg": "1d6",
+     "dmgType": "piercing",
+     "id": "u74eepcicy26",
+     "name": "Shortsword (off hand)",
+     "notes": "Bonus action",
+     "prof": true
+    }
+   ],
+   "background": "",
+   "bonuses": [],
+   "breath": {
+    "ancestry": "",
+    "dmgType": "",
+    "on": false,
+    "shape": ""
+   },
+   "classes": [
+    {
+     "caster": "half",
+     "hitDie": 10,
+     "id": "p63jf7uzdcyp",
+     "level": 5,
+     "name": "Ranger",
+     "subclass": "Gloom Stalker"
+    },
+    {
+     "caster": "none",
+     "hitDie": 8,
+     "id": "c7w2d4c5qmt7",
+     "level": 6,
+     "name": "Rogue",
+     "subclass": ""
+    }
+   ],
+   "coins": {
+    "cp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0,
+    "sp": 0
+   },
+   "conditions": [],
+   "death": {
+    "f": 0,
+    "s": 0
+   },
+   "defenses": [],
+   "features": [
+    {
+     "desc": "Add Wis to initiative (already worked in). First turn of combat: +10 ft speed and one extra weapon attack that deals +1d8 on a hit.",
+     "id": "li394330ismb",
+     "max": "",
+     "name": "Dread Ambusher",
+     "recharge": "none",
+     "source": "Gloom Stalker",
+     "used": 0
+    },
+    {
+     "desc": "Darkvision 60 ft. Invisible to creatures relying on darkvision while in darkness.",
+     "id": "bkjy8q798nhi",
+     "max": "",
+     "name": "Umbral Sight",
+     "recharge": "none",
+     "source": "Gloom Stalker",
+     "used": 0
+    },
+    {
+     "desc": "Attack twice when taking the Attack action.",
+     "id": "hhw64rx2dx62",
+     "max": "",
+     "name": "Extra Attack",
+     "recharge": "none",
+     "source": "Ranger",
+     "used": 0
+    },
+    {
+     "desc": "+2 to ranged weapon attacks. Already on the longbow.",
+     "id": "1rg2l28oo80g",
+     "max": "",
+     "name": "Fighting Style: Archery",
+     "recharge": "none",
+     "source": "Ranger",
+     "used": 0
+    },
+    {
+     "desc": "Once per turn, +3d6 when you have advantage or an ally is next to the target.",
+     "id": "ef63f39xmtea",
+     "max": "",
+     "name": "Sneak Attack",
+     "recharge": "none",
+     "source": "Rogue",
+     "used": 0
+    },
+    {
+     "desc": "Dash, Disengage or Hide as a bonus action.",
+     "id": "8xs7p53hjkiv",
+     "max": "",
+     "name": "Cunning Action",
+     "recharge": "none",
+     "source": "Rogue",
+     "used": 0
+    },
+    {
+     "desc": "Reaction: halve damage from an attack you can see.",
+     "id": "jpe6mqv6p7st",
+     "max": "",
+     "name": "Uncanny Dodge",
+     "recharge": "none",
+     "source": "Rogue",
+     "used": 0
+    },
+    {
+     "desc": "Double proficiency in four skills. Set on the Sheet tab.",
+     "id": "sapga2gr0uls",
+     "max": "",
+     "name": "Expertise",
+     "recharge": "none",
+     "source": "Rogue",
+     "used": 0
+    }
+   ],
+   "hdUsed": 0,
+   "hp": {
+    "cur": 86,
+    "max": 86,
+    "temp": 0
+   },
+   "hpLog": [],
+   "id": "azcrothrr11",
+   "initBonus": 2,
+   "inventory": [],
+   "look": {
+    "accent": "#9FB4C7",
+    "font": "IM Fell English",
+    "portrait": {
+     "asset": "",
+     "data": "",
+     "kind": "",
+     "pos": 30
+    },
+    "primary": "#3A3F47",
+    "theme": "shadow"
+   },
+   "name": "Azcroth",
+   "notes": {
+    "backstory": "",
+    "languages": "Common, Thieves' Cant",
+    "profs": "Light and medium armor, shields; simple and martial weapons; thieves' tools",
+    "session": "",
+    "traits": ""
+   },
+   "pactShort": false,
+   "player": "",
+   "prepOverride": "4",
+   "quirks": [],
+   "race": "Human",
+   "saves": {
+    "dex": true,
+    "str": true
+   },
+   "senses": [
+    {
+     "active": true,
+     "id": "tat95zjng1t2",
+     "label": "",
+     "range": 60,
+     "source": "Umbral Sight",
+     "type": "Darkvision"
+    }
+   ],
+   "shield": false,
+   "skills": {
+    "acrobatics": 2,
+    "athletics": 1,
+    "investigation": 2,
+    "perception": 2,
+    "stealth": 2,
+    "survival": 1
+   },
+   "slotOverride": "",
+   "slotsUsed": {},
+   "speed": 30,
+   "spellAbility": "wis",
+   "spells": [
+    {
+     "always": false,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "fzxf58h8or93",
+     "level": 1,
+     "name": "Hunter's Mark",
+     "prepared": true,
+     "range": "90 ft",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 bonus action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "fpsmhlzatpal",
+     "level": 1,
+     "name": "Disguise Self",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Gloom Stalker",
+     "time": "1 action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "wsc928djb2je",
+     "level": 2,
+     "name": "Rope Trick",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Gloom Stalker",
+     "time": "1 action"
+    }
+   ],
+   "trickster": {
+    "boon": "",
+    "god": "",
+    "notes": "",
+    "since": "",
+    "trait": ""
+   },
+   "updated": 1789643150544,
+   "xp": 0,
+   "owner": ""
+  },
+  {
+   "abilities": {
+    "cha": 10,
+    "con": 16,
+    "dex": 12,
+    "int": 16,
+    "str": 20,
+    "wis": 10
+   },
+   "acAbil2": "",
+   "acBase": 18,
+   "acDex": false,
+   "acDexCap": "",
+   "alignment": "",
+   "attacks": [
+    {
+     "ability": "str",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d8",
+     "dmgType": "slashing",
+     "id": "cjyyyksqqe6h",
+     "name": "Longsword",
+     "notes": "Versatile (1d10)",
+     "prof": true
+    }
+   ],
+   "background": "",
+   "bonuses": [
+    {
+     "active": true,
+     "id": "3pr4osy9m3zw",
+     "label": "Fighting Style: Defense",
+     "target": "ac",
+     "value": 1
+    }
+   ],
+   "breath": {
+    "ancestry": "",
+    "dmgType": "",
+    "on": false,
+    "shape": ""
+   },
+   "classes": [
+    {
+     "caster": "third",
+     "hitDie": 10,
+     "id": "mdiju50oosnm",
+     "level": 11,
+     "name": "Fighter",
+     "subclass": "Eldritch Knight"
+    }
+   ],
+   "coins": {
+    "cp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0,
+    "sp": 0
+   },
+   "conditions": [],
+   "death": {
+    "f": 0,
+    "s": 0
+   },
+   "defenses": [
+    {
+     "active": true,
+     "id": "sgmaja0tgr7d",
+     "kind": "resist",
+     "nonmagical": false,
+     "source": "Hellish Resistance",
+     "type": "fire"
+    }
+   ],
+   "features": [
+    {
+     "desc": "Bonus action: regain 1d10 + 11 HP.",
+     "id": "ombec0jfd45y",
+     "max": "1",
+     "name": "Second Wind",
+     "recharge": "short",
+     "source": "Fighter",
+     "used": 0
+    },
+    {
+     "desc": "Take one additional action.",
+     "id": "kikqfqj89ti8",
+     "max": "1",
+     "name": "Action Surge",
+     "recharge": "short",
+     "source": "Fighter",
+     "used": 0
+    },
+    {
+     "desc": "Reroll a failed saving throw.",
+     "id": "lmanrshsajdo",
+     "max": "1",
+     "name": "Indomitable",
+     "recharge": "long",
+     "source": "Fighter",
+     "used": 0
+    },
+    {
+     "desc": "Attack three times when taking the Attack action.",
+     "id": "bakivt1xz5ol",
+     "max": "",
+     "name": "Extra Attack (2)",
+     "recharge": "none",
+     "source": "Fighter",
+     "used": 0
+    },
+    {
+     "desc": "Summon a bonded weapon to hand as a bonus action; can't be disarmed.",
+     "id": "9f0xb46w03fs",
+     "max": "",
+     "name": "Weapon Bond",
+     "recharge": "none",
+     "source": "Eldritch Knight",
+     "used": 0
+    },
+    {
+     "desc": "After casting a cantrip, make one weapon attack as a bonus action.",
+     "id": "s423v6yyibem",
+     "max": "",
+     "name": "War Magic",
+     "recharge": "none",
+     "source": "Eldritch Knight",
+     "used": 0
+    },
+    {
+     "desc": "A creature hit by your weapon has disadvantage on its next save against your spell before the end of your next turn.",
+     "id": "d4uwwyra20st",
+     "max": "",
+     "name": "Eldritch Strike",
+     "recharge": "none",
+     "source": "Eldritch Knight",
+     "used": 0
+    },
+    {
+     "desc": "Cast at 2nd level once per long rest.",
+     "id": "xc0jcj0h09rn",
+     "max": "1",
+     "name": "Hellish Rebuke",
+     "recharge": "long",
+     "source": "Infernal Legacy",
+     "used": 0
+    },
+    {
+     "desc": "Cast once per long rest.",
+     "id": "ry1wxcfj0kua",
+     "max": "1",
+     "name": "Darkness",
+     "recharge": "long",
+     "source": "Infernal Legacy",
+     "used": 0
+    }
+   ],
+   "hdUsed": 0,
+   "hp": {
+    "cur": 103,
+    "max": 103,
+    "temp": 0
+   },
+   "hpLog": [],
+   "id": "detlefek11",
+   "initBonus": 0,
+   "inventory": [
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "97aq38qjh8hu",
+     "name": "Plate armor",
+     "notes": "",
+     "qty": 1,
+     "weight": 65
+    },
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "fs8e3s5zi6ra",
+     "name": "Shield",
+     "notes": "",
+     "qty": 1,
+     "weight": 6
+    },
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "arqkfml4a14e",
+     "name": "Longsword",
+     "notes": "Bonded weapon",
+     "qty": 1,
+     "weight": 3
+    }
+   ],
+   "look": {
+    "accent": "#D98FD0",
+    "font": "Cinzel",
+    "portrait": {
+     "asset": "",
+     "data": "",
+     "kind": "",
+     "pos": 30
+    },
+    "primary": "#5B3A8C",
+    "theme": "amethyst"
+   },
+   "name": "Detlef",
+   "notes": {
+    "backstory": "",
+    "languages": "Common, Infernal",
+    "profs": "All armor, shields; simple and martial weapons",
+    "session": "",
+    "traits": ""
+   },
+   "pactShort": false,
+   "player": "",
+   "prepOverride": "8",
+   "quirks": [],
+   "race": "Tiefling",
+   "saves": {
+    "con": true,
+    "str": true
+   },
+   "senses": [
+    {
+     "active": true,
+     "id": "jesidfbhlk1k",
+     "label": "",
+     "range": 60,
+     "source": "Tiefling",
+     "type": "Darkvision"
+    }
+   ],
+   "shield": true,
+   "skills": {
+    "arcana": 1,
+    "athletics": 1,
+    "intimidation": 1,
+    "perception": 1
+   },
+   "slotOverride": "",
+   "slotsUsed": {},
+   "speed": 30,
+   "spellAbility": "int",
+   "spells": [
+    {
+     "always": true,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "7z6kno9vmpjb",
+     "level": 0,
+     "name": "Thaumaturgy",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Tiefling",
+     "time": "1 action"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "d4k7ijsgn853",
+     "level": 0,
+     "name": "Booming Blade",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "TCE",
+     "time": "1 action"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "w67tzb0q1xkb",
+     "level": 1,
+     "name": "Shield",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 reaction"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "7eqmk09jxkuo",
+     "level": 1,
+     "name": "Absorb Elements",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "XGE",
+     "time": "1 reaction"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "gfh6rh69qfgd",
+     "level": 2,
+     "name": "Misty Step",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 bonus action"
+    }
+   ],
+   "trickster": {
+    "boon": "",
+    "god": "",
+    "notes": "",
+    "since": "",
+    "trait": ""
+   },
+   "updated": 1789609487425,
+   "xp": 0,
+   "owner": ""
+  },
+  {
+   "abilities": {
+    "cha": 20,
+    "con": 16,
+    "dex": 14,
+    "int": 10,
+    "str": 10,
+    "wis": 10
+   },
+   "acAbil2": "",
+   "acBase": 15,
+   "acDex": true,
+   "acDexCap": 2,
+   "alignment": "",
+   "attacks": [
+    {
+     "ability": "cha",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d8",
+     "dmgType": "slashing",
+     "id": "lja16w7air88",
+     "name": "Pact Blade (longsword)",
+     "notes": "Hex Warrior; attacks twice",
+     "prof": true
+    },
+    {
+     "ability": "spell",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d10",
+     "dmgType": "force",
+     "id": "njpr7g2031vl",
+     "name": "Eldritch Blast",
+     "notes": "3 beams at this level; Agonizing Blast adds Cha to each",
+     "prof": true
+    }
+   ],
+   "background": "",
+   "bonuses": [],
+   "breath": {
+    "ancestry": "",
+    "dmgType": "",
+    "on": false,
+    "shape": ""
+   },
+   "classes": [
+    {
+     "caster": "none",
+     "hitDie": 8,
+     "id": "cdotxdfzokl8",
+     "level": 11,
+     "name": "Warlock",
+     "subclass": "The Hexblade"
+    }
+   ],
+   "coins": {
+    "cp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0,
+    "sp": 0
+   },
+   "conditions": [],
+   "death": {
+    "f": 0,
+    "s": 0
+   },
+   "defenses": [
+    {
+     "active": true,
+     "id": "349idfsy7zx1",
+     "kind": "resist",
+     "nonmagical": false,
+     "source": "Fire Genasi",
+     "type": "fire"
+    }
+   ],
+   "features": [
+    {
+     "desc": "Bonus action, 30 ft: add PB to damage against the target, crit on 19-20, regain HP when it dies.",
+     "id": "qtb2i7xkejwz",
+     "max": "1",
+     "name": "Hexblade's Curse",
+     "recharge": "short",
+     "source": "The Hexblade",
+     "used": 0
+    },
+    {
+     "desc": "Use Cha for attacks and damage with the pact weapon. Already set on the attack.",
+     "id": "ecsunivakq8x",
+     "max": "",
+     "name": "Hex Warrior",
+     "recharge": "none",
+     "source": "The Hexblade",
+     "used": 0
+    },
+    {
+     "desc": "Raise a slain humanoid as a specter until your next long rest.",
+     "id": "5rii8zlarypj",
+     "max": "1",
+     "name": "Accursed Specter",
+     "recharge": "long",
+     "source": "The Hexblade",
+     "used": 0
+    },
+    {
+     "desc": "When the cursed target hits you, roll a d6: on 4+ the attack misses.",
+     "id": "y7ibmpyh20sh",
+     "max": "",
+     "name": "Armor of Hexes",
+     "recharge": "none",
+     "source": "The Hexblade",
+     "used": 0
+    },
+    {
+     "desc": "Summon a pact weapon.",
+     "id": "8l3ih1k8rgip",
+     "max": "",
+     "name": "Pact of the Blade",
+     "recharge": "none",
+     "source": "Warlock",
+     "used": 0
+    },
+    {
+     "desc": "Agonizing Blast, Devil's Sight, Thirsting Blade (attack twice with pact weapon). Add the rest here.",
+     "id": "x8foh9fbco65",
+     "max": "",
+     "name": "Invocations",
+     "recharge": "none",
+     "source": "Warlock",
+     "used": 0
+    },
+    {
+     "desc": "Cast your 6th-level arcanum spell.",
+     "id": "097lg70bxnnl",
+     "max": "1",
+     "name": "Mystic Arcanum (6th)",
+     "recharge": "long",
+     "source": "Warlock",
+     "used": 0
+    },
+    {
+     "desc": "Produce Flame cantrip; Burning Hands and Flaming Sphere once each per long rest.",
+     "id": "gakm8e8hm33p",
+     "max": "",
+     "name": "Reach to the Blaze",
+     "recharge": "none",
+     "source": "Fire Genasi",
+     "used": 0
+    },
+    {
+     "desc": "Once per long rest without a slot.",
+     "id": "brn7gn6bo31b",
+     "max": "1",
+     "name": "Burning Hands",
+     "recharge": "long",
+     "source": "Fire Genasi",
+     "used": 0
+    },
+    {
+     "desc": "Once per long rest without a slot.",
+     "id": "bc7j06mj8wjz",
+     "max": "1",
+     "name": "Flaming Sphere",
+     "recharge": "long",
+     "source": "Fire Genasi",
+     "used": 0
+    }
+   ],
+   "hdUsed": 0,
+   "hp": {
+    "cur": 91,
+    "max": 91,
+    "temp": 0
+   },
+   "hpLog": [],
+   "id": "astridhex11",
+   "initBonus": 0,
+   "inventory": [
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "ln2ch1icbtl9",
+     "name": "Half plate",
+     "notes": "",
+     "qty": 1,
+     "weight": 40
+    },
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "59jddrzqipwy",
+     "name": "Shield",
+     "notes": "",
+     "qty": 1,
+     "weight": 6
+    }
+   ],
+   "look": {
+    "accent": "#F2C84B",
+    "font": "Pirata One",
+    "portrait": {
+     "asset": "",
+     "data": "",
+     "kind": "",
+     "pos": 30
+    },
+    "primary": "#8A5A12",
+    "theme": "sun"
+   },
+   "name": "Astrid",
+   "notes": {
+    "backstory": "",
+    "languages": "Common, Primordial",
+    "profs": "Light and medium armor, shields; simple and martial weapons",
+    "session": "",
+    "traits": ""
+   },
+   "pactShort": true,
+   "player": "",
+   "prepOverride": "11",
+   "quirks": [],
+   "race": "Fire Genasi",
+   "saves": {
+    "cha": true,
+    "wis": true
+   },
+   "senses": [
+    {
+     "active": true,
+     "id": "cj8esw5hjioq",
+     "label": "",
+     "range": 60,
+     "source": "Fire Genasi",
+     "type": "Darkvision"
+    },
+    {
+     "active": true,
+     "id": "845abz6rvao7",
+     "label": "",
+     "range": 120,
+     "source": "Eldritch invocation",
+     "type": "Devil's sight"
+    }
+   ],
+   "shield": true,
+   "skills": {
+    "arcana": 1,
+    "deception": 1,
+    "intimidation": 1,
+    "investigation": 1
+   },
+   "slotOverride": "0 0 0 0 3",
+   "slotsUsed": {},
+   "speed": 30,
+   "spellAbility": "cha",
+   "spells": [
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "04xe4kun0hii",
+     "level": 0,
+     "name": "Eldritch Blast",
+     "prepared": true,
+     "range": "120 ft",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "f5ulo9si3x9d",
+     "level": 0,
+     "name": "Produce Flame",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Fire Genasi",
+     "time": "1 action"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "r346bkeg9u7n",
+     "level": 1,
+     "name": "Hex",
+     "prepared": true,
+     "range": "90 ft",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 bonus action"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "5qj18dvwhnfh",
+     "level": 1,
+     "name": "Shield",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Hexblade",
+     "time": "1 reaction"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "jvxhalyglh2t",
+     "level": 2,
+     "name": "Misty Step",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 bonus action"
+    }
+   ],
+   "trickster": {
+    "boon": "",
+    "god": "",
+    "notes": "",
+    "since": "",
+    "trait": ""
+   },
+   "updated": 1789609487425,
+   "xp": 0,
+   "owner": ""
+  },
+  {
+   "abilities": {
+    "cha": 16,
+    "con": 16,
+    "dex": 10,
+    "int": 8,
+    "str": 20,
+    "wis": 12
+   },
+   "acAbil2": "",
+   "acBase": 18,
+   "acDex": false,
+   "acDexCap": "",
+   "alignment": "",
+   "attacks": [
+    {
+     "ability": "str",
+     "addMod": true,
+     "bonus": 0,
+     "dmg": "1d8",
+     "dmgType": "slashing",
+     "id": "d9wo2j9um1pg",
+     "name": "Longsword",
+     "notes": "+1d8 radiant from Improved Divine Smite. Dueling +2 included.",
+     "prof": true
+    }
+   ],
+   "background": "",
+   "bonuses": [
+    {
+     "active": true,
+     "id": "lumo59nh0ha6",
+     "label": "Aura of Protection",
+     "target": "allsaves",
+     "value": 3
+    },
+    {
+     "active": true,
+     "id": "p3o5qfatx6dw",
+     "label": "Fighting Style: Dueling",
+     "target": "damage",
+     "value": 2
+    }
+   ],
+   "breath": {
+    "ancestry": "",
+    "dmgType": "",
+    "on": false,
+    "shape": ""
+   },
+   "classes": [
+    {
+     "caster": "half",
+     "hitDie": 10,
+     "id": "ywz0cvn336c5",
+     "level": 11,
+     "name": "Paladin",
+     "subclass": "Oath of Vengeance"
+    }
+   ],
+   "coins": {
+    "cp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0,
+    "sp": 0
+   },
+   "conditions": [],
+   "death": {
+    "f": 0,
+    "s": 0
+   },
+   "defenses": [],
+   "features": [
+    {
+     "desc": "Detect celestials, fiends and undead within 60 ft.",
+     "id": "nsfks7dr28he",
+     "max": "1+CHA",
+     "name": "Divine Sense",
+     "recharge": "long",
+     "source": "Paladin",
+     "used": 0
+    },
+    {
+     "desc": "Pool of healing points; 5 cures a disease or poison.",
+     "id": "79rb7n6w3f2h",
+     "max": "LEVEL*5",
+     "name": "Lay on Hands",
+     "recharge": "long",
+     "source": "Paladin",
+     "used": 0
+    },
+    {
+     "desc": "On a melee hit, spend a slot: +2d8 radiant, +1d8 per slot level above 1st, +1d8 vs undead or fiends.",
+     "id": "o43ghosnei06",
+     "max": "",
+     "name": "Divine Smite",
+     "recharge": "none",
+     "source": "Paladin",
+     "used": 0
+    },
+    {
+     "desc": "Every melee weapon hit deals +1d8 radiant.",
+     "id": "bu1b4evtwlpu",
+     "max": "",
+     "name": "Improved Divine Smite",
+     "recharge": "none",
+     "source": "Paladin",
+     "used": 0
+    },
+    {
+     "desc": "You and allies within 10 ft add your Cha to saves. Already added to your saves.",
+     "id": "pxqpawri12qg",
+     "max": "",
+     "name": "Aura of Protection",
+     "recharge": "none",
+     "source": "Paladin",
+     "used": 0
+    },
+    {
+     "desc": "You and allies within 10 ft can't be frightened.",
+     "id": "rdepdpsbwc01",
+     "max": "",
+     "name": "Aura of Courage",
+     "recharge": "none",
+     "source": "Paladin",
+     "used": 0
+    },
+    {
+     "desc": "Abjure Enemy (frighten one creature) or Vow of Enmity (advantage on attacks against one creature for 1 minute).",
+     "id": "sbsn8e4903g9",
+     "max": "1",
+     "name": "Channel Divinity",
+     "recharge": "short",
+     "source": "Oath of Vengeance",
+     "used": 0
+    },
+    {
+     "desc": "After an opportunity attack hits, move up to half speed without provoking.",
+     "id": "r86f27cm1f6j",
+     "max": "",
+     "name": "Relentless Avenger",
+     "recharge": "none",
+     "source": "Oath of Vengeance",
+     "used": 0
+    },
+    {
+     "desc": "Attack twice when taking the Attack action.",
+     "id": "3fs7hjslbgf7",
+     "max": "",
+     "name": "Extra Attack",
+     "recharge": "none",
+     "source": "Paladin",
+     "used": 0
+    },
+    {
+     "desc": "Immune to disease.",
+     "id": "y6g2etwm5tu5",
+     "max": "",
+     "name": "Divine Health",
+     "recharge": "none",
+     "source": "Paladin",
+     "used": 0
+    }
+   ],
+   "hdUsed": 0,
+   "hp": {
+    "cur": 103,
+    "max": 103,
+    "temp": 0
+   },
+   "hpLog": [],
+   "id": "ivyvengeance11",
+   "initBonus": 0,
+   "inventory": [
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "0b3jx9vxlabf",
+     "name": "Plate armor",
+     "notes": "",
+     "qty": 1,
+     "weight": 65
+    },
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "wps6eixaamdm",
+     "name": "Shield",
+     "notes": "",
+     "qty": 1,
+     "weight": 6
+    },
+    {
+     "attuned": false,
+     "equipped": true,
+     "id": "ivvhwre7ifdw",
+     "name": "Longsword",
+     "notes": "",
+     "qty": 1,
+     "weight": 3
+    }
+   ],
+   "look": {
+    "accent": "#6CC4DF",
+    "font": "IM Fell English",
+    "portrait": {
+     "asset": "",
+     "data": "",
+     "kind": "",
+     "pos": 30
+    },
+    "primary": "#1F4E8C",
+    "theme": "sapphire"
+   },
+   "name": "Ivy",
+   "notes": {
+    "backstory": "",
+    "languages": "Common",
+    "profs": "All armor, shields; simple and martial weapons",
+    "session": "",
+    "traits": ""
+   },
+   "pactShort": false,
+   "player": "",
+   "prepOverride": "8",
+   "quirks": [],
+   "race": "Human",
+   "saves": {
+    "cha": true,
+    "wis": true
+   },
+   "senses": [],
+   "shield": true,
+   "skills": {
+    "athletics": 1,
+    "insight": 1,
+    "intimidation": 1,
+    "persuasion": 1
+   },
+   "slotOverride": "",
+   "slotsUsed": {},
+   "speed": 30,
+   "spellAbility": "cha",
+   "spells": [
+    {
+     "always": true,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "52ojaxumxp70",
+     "level": 1,
+     "name": "Bane",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Oath of Vengeance",
+     "time": "1 action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "i6btoic2at7f",
+     "level": 1,
+     "name": "Hunter's Mark",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Oath of Vengeance",
+     "time": "1 bonus action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "hvsx3glkb62z",
+     "level": 2,
+     "name": "Hold Person",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Oath of Vengeance",
+     "time": "1 action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": false,
+     "desc": "",
+     "dur": "",
+     "id": "a40q0qidibm0",
+     "level": 2,
+     "name": "Misty Step",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Oath of Vengeance",
+     "time": "1 bonus action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "z4zjtp2sjx8h",
+     "level": 3,
+     "name": "Haste",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Oath of Vengeance",
+     "time": "1 action"
+    },
+    {
+     "always": true,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "5aji080l5li6",
+     "level": 3,
+     "name": "Protection from Energy",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "Oath of Vengeance",
+     "time": "1 action"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "wyx9q4z4p0ul",
+     "level": 1,
+     "name": "Bless",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 action"
+    },
+    {
+     "always": false,
+     "comp": "",
+     "conc": true,
+     "desc": "",
+     "dur": "",
+     "id": "hwc6fad7mfbb",
+     "level": 1,
+     "name": "Shield of Faith",
+     "prepared": true,
+     "range": "",
+     "ritual": false,
+     "source": "PHB",
+     "time": "1 bonus action"
+    }
+   ],
+   "trickster": {
+    "boon": "",
+    "god": "",
+    "notes": "",
+    "since": "",
+    "trait": ""
+   },
+   "updated": 1789609487425,
+   "xp": 0,
+   "owner": ""
+  }
+ ]
+}
