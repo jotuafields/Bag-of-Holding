@@ -704,8 +704,10 @@ function onRemote(snap){
   if(changed){
     saveLocal();
     afterSync();
-    const a=document.activeElement, typing=a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&!a.dataset.dmg;
-    if(typing) setTimeout(()=>{ const y=scrollY; renderAll(); scrollTo(0,y); },1500); else { const y=scrollY; renderAll(); scrollTo(0,y); }
+    const a=document.activeElement, busy=(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&!a.dataset.dmg)
+      || document.querySelector("dialog[open]") || Date.now()-lastEdit<4000;
+    if(busy){ clearTimeout(onRemote.h); onRemote.h=setTimeout(()=>{ const y=scrollY; renderAll(); scrollTo(0,y); },4000); }
+    else { const y=scrollY; renderAll(); scrollTo(0,y); }
   }
 }
 const FB = {
@@ -1137,6 +1139,9 @@ function refreshOut(){
 function setPath(o,path,v){const p=path.split(".");let x=o;for(let i=0;i<p.length-1;i++){x[p[i]]=x[p[i]]||{};x=x[p[i]];}x[p[p.length-1]]=v;}
 function readVal(el){ if(el.type==="checkbox") return el.checked; if(el.hasAttribute("data-num")) return el.value===""?"":num(el.value); return el.value; }
 
+let lastEdit=0;
+document.addEventListener("input",e=>{ lastEdit=Date.now(); },true);
+document.addEventListener("focusin",e=>{ if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) lastEdit=Date.now(); });
 document.addEventListener("input",e=>{
   const el=e.target, c=C(); if(!c) return;
   if(el.dataset.dmg!==undefined){ dmgRows[+el.dataset.dmg][el.dataset.f]=el.value; return; }
@@ -1146,6 +1151,7 @@ document.addEventListener("input",e=>{
   else return;
   queueSave(c); refreshOut();
   if((el.dataset.bind||"").startsWith("look.")){
+    if(el.type==="color" && !/^#[0-9a-f]{6}$/i.test(el.value)) return;
     if(el.type==="color"){ c.look.theme="custom"; document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false")); }
     applyTheme(c);
     document.querySelectorAll(".portrait img,.portrait video").forEach(m=>m.style.objectPosition=`50% ${num(c.look.portrait.pos)}%`);
@@ -1154,6 +1160,12 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("change",e=>{
   const el=e.target;
+  if(el.type==="color" && (el.dataset.bind||"").startsWith("look.")){
+    const c=C(); if(!c) return;
+    setPath(c,el.dataset.bind,el.value); c.look.theme="custom";
+    document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
+    applyTheme(c); queueSave(c); return;
+  }
   if(el.id==="charPick"){ dmgRows=[{amt:"",type:"slashing"}]; cur=el.value; saveLocal(); renderAll(); checkWhispers(); return; }
   if(el.dataset.act==="onlyprep"){ rSpells.only=el.checked; renderAll(); return; }
   if(el.dataset.dmg!==undefined||el.id==="dmgMagic") return;
@@ -1184,7 +1196,11 @@ document.addEventListener("click",e=>{
   const toggle=(total,used)=> i<total-used ? Math.min(total,used+1) : Math.max(0,used-1); // tap a full pip to spend one, an empty one to restore one
   switch(a){
     case "gotolook": tab="notes"; saveLocal(); renderAll(); $("#look")?.scrollIntoView({block:"start"}); return;
-    case "theme": { const t=THEMES.find(x=>x[0]===b.dataset.k); c.look.theme=t[0]; c.look.primary=t[2]; c.look.accent=t[3]; break; }
+    case "theme": { const t=THEMES.find(x=>x[0]===b.dataset.k); c.look.theme=t[0]; c.look.primary=t[2]; c.look.accent=t[3];
+      const pi=document.querySelector('input[data-bind="look.primary"]'), ai=document.querySelector('input[data-bind="look.accent"]');
+      if(pi) pi.value=t[2]; if(ai) ai.value=t[3];
+      document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed", x.dataset.k===t[0]));
+      applyTheme(c); queueSave(c); return; }
     case "rmportrait": if(!confirm("Remove this portrait?")) return; c.look.portrait={kind:"",asset:"",url:"",data:"",pos:30}; break;
     case "roll": e.preventDefault(); rollKey(c,b.dataset.key,b.dataset.label); return;
     case "dice": openDice(); return;
