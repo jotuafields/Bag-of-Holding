@@ -62,7 +62,10 @@ button.danger{color:var(--danger)}
 .swatch{display:flex;align-items:center;gap:8px;text-align:left;padding:8px}
 .swatch i{width:26px;height:30px;flex:none;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 .swatch[aria-pressed=true]{border:2px solid var(--emerald);font-weight:700}
-input[type=color]{height:40px;padding:2px}
+.cbtn{width:30px;height:34px;padding:0;border:2px solid var(--line);border-radius:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.cbtn[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.cgrid{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
+.hexin{width:110px;font-family:ui-monospace,Menlo,Consolas,monospace}
 input[type=range]{padding:0;accent-color:var(--emerald)}
 .hero input.name{font-family:var(--display);font-size:clamp(30px,6vw,48px);font-weight:700;border:none;background:transparent;padding:0;line-height:1.1;letter-spacing:-.01em}
 .hero .sub{color:var(--muted);margin-top:4px}
@@ -239,7 +242,7 @@ body.dm #tabs{display:none}
     <select id="charPick" aria-label="Choose character"></select>
     <button id="menuBtn">Characters</button>
     <button id="inboxBtn" data-act="inbox">Whispers<span id="inboxBadge"></span></button>
-    <button id="themeBtn" class="ghost" aria-label="Switch light or dark theme">Theme</button>
+    <button id="themeBtn" class="ghost" aria-label="Switch between light and dark mode">Light / dark</button>
     <span class="sync" id="sync">Saved on this device</span>
   </div>
   <div id="hero"></div>
@@ -252,6 +255,7 @@ body.dm #tabs{display:none}
   <div class="toolbar">
     <button class="primary" data-act="new">New character</button>
     <button data-act="dup">Duplicate this one</button>
+    <button data-act="gotolook">Portrait and colors</button>
     <button data-act="dmenter" id="dmBtn">Open DM screen</button>
   </div>
   <h3>Back up or move a character</h3>
@@ -289,6 +293,11 @@ body.dm #tabs{display:none}
 <div id="gate"><div class="box"><div class="hexmark">B</div><h1>Bag of Holding</h1>
   <p class="muted" id="gateMsg">Sign in with the Google account your DM invited.</p>
   <button class="primary" id="signIn">Sign in with Google</button>
+  <div id="emailWrap"><button class="ghost" id="emailToggle" style="margin-top:8px">Or sign in with your email</button>
+    <div id="emailBox" hidden style="margin-top:8px">
+      <div class="row" style="flex-wrap:nowrap"><input id="emailInput" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"><button class="primary" id="emailSend">Send link</button></div>
+      <p class="small muted" style="margin:6px 0 0">We'll email you a link. Open it on this device and you're in. No password needed.</p>
+    </div></div>
   <p class="small muted" id="gateSub"></p></div></div>
 <dialog id="claimDlg"></dialog>
 <div id="fog" aria-hidden="true"></div>
@@ -720,9 +729,10 @@ const FB = {
 };
 let me=null, isDM=false, appSettings={dm:"",dmEmail:"",emails:[]}, storage=null, claimed=false;
 const mine = c => !!c && (c.owner===(me&&me.uid) || isDM);
+const LS_EMAIL="boh.emailForSignIn";
 function gate(msg,sub,showBtn){
   $("#gate").style.display="flex"; $("#gateMsg").textContent=msg;
-  $("#gateSub").textContent=sub||""; $("#signIn").hidden=!showBtn;
+  $("#gateSub").textContent=sub||""; $("#signIn").hidden=!showBtn; $("#emailWrap").hidden=!showBtn;
 }
 function ungate(){ $("#gate").style.display="none"; }
 async function connectDb(){
@@ -751,7 +761,42 @@ async function connectDb(){
     const p=new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithPopup(p).catch(()=>firebase.auth().signInWithRedirect(p));
   };
+  setupEmailLink(firebase.auth());
 }
+function setupEmailLink(auth){
+  $("#emailToggle").onclick=()=>{
+    const box=$("#emailBox"); box.hidden=!box.hidden;
+    if(!box.hidden){ const last=localStorage.getItem(LS_EMAIL); if(last) $("#emailInput").value=last; $("#emailInput").focus(); }
+  };
+  const send=async()=>{
+    const em=$("#emailInput").value.trim();
+    if(!em.includes("@")) return toastGate("Enter your email address");
+    $("#emailSend").disabled=true; toastGate("Sending…");
+    try{
+      await auth.sendSignInLinkToEmail(em,{url:location.href.split("#")[0].split("?")[0],handleCodeInApp:true});
+      try{ localStorage.setItem(LS_EMAIL,em); }catch(e){}
+      toastGate(`Link sent to ${em}. Open it on this device. Check spam if it's slow.`);
+    }catch(e){
+      toastGate(e.code==="auth/operation-not-allowed" ? "Email links aren't switched on in Firebase yet."
+        : e.code==="auth/invalid-email" ? "That address doesn't look right."
+        : "Couldn't send the link. Check the address and try again.");
+    }
+    $("#emailSend").disabled=false;
+  };
+  $("#emailSend").onclick=send;
+  $("#emailInput").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); send(); } });
+  if(auth.isSignInWithEmailLink(location.href)){
+    let em=null; try{ em=localStorage.getItem(LS_EMAIL); }catch(e){}
+    if(!em) em=prompt("Type the email address you asked for the link with:");
+    if(em){
+      gate("Signing you in…","",false);
+      auth.signInWithEmailLink(em,location.href)
+        .then(()=>{ try{ localStorage.removeItem(LS_EMAIL); }catch(e){} history.replaceState(null,"",location.pathname); })
+        .catch(()=>gate("That sign-in link didn't work.","Links can only be used once and expire after a while. Ask for a new one.",true));
+    }
+  }
+}
+function toastGate(msg){ $("#gateSub").textContent=msg; }
 function startSync(){
   if(startSync.done) return; startSync.done=true;
   db.collection("characters").onSnapshot(onRemote, e=>setSync("Live updates paused"));
@@ -1113,10 +1158,14 @@ function rLook(c){
   </section>
   <section class="panel">
     <h3 style="margin-top:0">Theme</h3>
-    <div class="swatches">${THEMES.map(([k,n,p,a])=>`<button class="swatch" data-act="theme" data-k="${k}" aria-pressed="${L.theme===k}"><i style="background:linear-gradient(135deg,${p} 55%,${a} 55%)"></i>${n}</button>`).join("")}</div>
+    <div class="swatches" data-live="${esc(L.primary)}|${esc(L.accent)}">${THEMES.map(([k,n,p,a])=>`<button class="swatch" data-act="theme" data-k="${k}" aria-pressed="${L.theme===k}"><i style="background:linear-gradient(135deg,${p} 55%,${a} 55%)"></i>${n}</button>`).join("")}</div>
+    <h3>Main color</h3>
+    <div class="cgrid"><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#1E6B4B" style="background:#1E6B4B" aria-label="#1E6B4B"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#3FA34D" style="background:#3FA34D" aria-label="#3FA34D"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#4E5B31" style="background:#4E5B31" aria-label="#4E5B31"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#2F6F8F" style="background:#2F6F8F" aria-label="#2F6F8F"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#1F4E8C" style="background:#1F4E8C" aria-label="#1F4E8C"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#5B3A8C" style="background:#5B3A8C" aria-label="#5B3A8C"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#9B2335" style="background:#9B2335" aria-label="#9B2335"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#B7472A" style="background:#B7472A" aria-label="#B7472A"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#8A5A12" style="background:#8A5A12" aria-label="#8A5A12"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#E2A93A" style="background:#E2A93A" aria-label="#E2A93A"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#C75B8A" style="background:#C75B8A" aria-label="#C75B8A"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#3A3F47" style="background:#3A3F47" aria-label="#3A3F47"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#6D4C41" style="background:#6D4C41" aria-label="#6D4C41"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#111418" style="background:#111418" aria-label="#111418"></button></div>
+    <label class="row small">Or type a color code <input class="hexin" data-bind="look.primary" value="${esc(L.primary)}" spellcheck="false" autocomplete="off" aria-label="Main color code"></label>
+    <h3>Accent color</h3>
+    <div class="cgrid"><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#1E6B4B" style="background:#1E6B4B" aria-label="#1E6B4B"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#3FA34D" style="background:#3FA34D" aria-label="#3FA34D"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#4E5B31" style="background:#4E5B31" aria-label="#4E5B31"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#2F6F8F" style="background:#2F6F8F" aria-label="#2F6F8F"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#1F4E8C" style="background:#1F4E8C" aria-label="#1F4E8C"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#5B3A8C" style="background:#5B3A8C" aria-label="#5B3A8C"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#9B2335" style="background:#9B2335" aria-label="#9B2335"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#B7472A" style="background:#B7472A" aria-label="#B7472A"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#8A5A12" style="background:#8A5A12" aria-label="#8A5A12"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#E2A93A" style="background:#E2A93A" aria-label="#E2A93A"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#C75B8A" style="background:#C75B8A" aria-label="#C75B8A"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#3A3F47" style="background:#3A3F47" aria-label="#3A3F47"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#6D4C41" style="background:#6D4C41" aria-label="#6D4C41"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#111418" style="background:#111418" aria-label="#111418"></button></div>
+    <label class="row small">Or type a color code <input class="hexin" data-bind="look.accent" value="${esc(L.accent)}" spellcheck="false" autocomplete="off" aria-label="Accent color code"></label>
     <div class="fields" style="margin-top:10px">
-      <label class="f">Main color<input type="color" data-bind="look.primary" value="${esc(L.primary)}"></label>
-      <label class="f">Accent color<input type="color" data-bind="look.accent" value="${esc(L.accent)}"></label>
       <label class="f">Name lettering<select data-bind="look.font">${FONTS.map(([f,n])=>`<option value="${f}" ${L.font===f?"selected":""}>${n}</option>`).join("")}</select></label>
     </div>
     <p class="muted small">Pick a preset, then fine-tune the colors if you like. Each character keeps its own theme.</p>
@@ -1151,7 +1200,12 @@ document.addEventListener("input",e=>{
   else return;
   queueSave(c); refreshOut();
   if((el.dataset.bind||"").startsWith("look.")){
-    if(el.type==="color" && !/^#[0-9a-f]{6}$/i.test(el.value)) return;
+    if(el.classList.contains("hexin")){
+      const v=el.value.trim().replace(/^#?/,"#");
+      if(!/^#[0-9a-f]{6}$/i.test(v)) return;
+      setPath(c,el.dataset.bind,v); c.look.theme="custom";
+      document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
+    }
     if(el.type==="color"){ c.look.theme="custom"; document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false")); }
     applyTheme(c);
     document.querySelectorAll(".portrait img,.portrait video").forEach(m=>m.style.objectPosition=`50% ${num(c.look.portrait.pos)}%`);
@@ -1195,10 +1249,16 @@ document.addEventListener("click",e=>{
     if(id){ const n=document.querySelector(`[data-id="${id}"]`); n?.closest("details")?.setAttribute("open",""); } };
   const toggle=(total,used)=> i<total-used ? Math.min(total,used+1) : Math.max(0,used-1); // tap a full pip to spend one, an empty one to restore one
   switch(a){
-    case "gotolook": tab="notes"; saveLocal(); renderAll(); $("#look")?.scrollIntoView({block:"start"}); return;
+    case "gotolook": $("#menu").close(); tab="notes"; saveLocal(); renderAll(); $("#look")?.scrollIntoView({block:"start"}); return;
+    case "pickcolor": { const slot=b.dataset.slot; c.look[slot]=b.dataset.c; c.look.theme="custom";
+      const f=document.querySelector(`input[data-bind="look.${slot}"]`); if(f) f.value=b.dataset.c;
+      document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
+      document.querySelectorAll(`.cbtn[data-slot="${slot}"]`).forEach(x=>x.setAttribute("aria-pressed", x.dataset.c===b.dataset.c));
+      applyTheme(c); queueSave(c); return; }
     case "theme": { const t=THEMES.find(x=>x[0]===b.dataset.k); c.look.theme=t[0]; c.look.primary=t[2]; c.look.accent=t[3];
       const pi=document.querySelector('input[data-bind="look.primary"]'), ai=document.querySelector('input[data-bind="look.accent"]');
       if(pi) pi.value=t[2]; if(ai) ai.value=t[3];
+      document.querySelectorAll(".cbtn").forEach(x=>x.setAttribute("aria-pressed","false"));
       document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed", x.dataset.k===t[0]));
       applyTheme(c); queueSave(c); return; }
     case "rmportrait": if(!confirm("Remove this portrait?")) return; c.look.portrait={kind:"",asset:"",url:"",data:"",pos:30}; break;
