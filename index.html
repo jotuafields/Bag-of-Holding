@@ -1,0 +1,1908 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bag of Holding</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Atkinson+Hyperlegible:wght@400;700&family=Cinzel:wght@500;700&family=Uncial+Antiqua&family=Pirata+One&family=IM+Fell+English&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF1E7;--panel:#F9FBF5;--ink:#1B2A22;--muted:#56665C;--line:#C9D4C7;
+  --emerald:#1E6B4B;--emerald-ink:#F3FAF5;--emerald-soft:#D6E8DC;
+  --honey:#9A6508;--honey-fill:#E2A93A;--honey-soft:#F6E3B4;--danger:#A83A2C;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1B15;--panel:#15261E;--ink:#E7EFE8;--muted:#A3B5A9;--line:#2B4336;
+    --emerald:#4FC08D;--emerald-ink:#0B1A13;--emerald-soft:#1D3A2D;
+    --honey:#E7B545;--honey-fill:#E7B545;--honey-soft:#3A2F14;--danger:#E88373;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1B15;--panel:#15261E;--ink:#E7EFE8;--muted:#A3B5A9;--line:#2B4336;
+  --emerald:#4FC08D;--emerald-ink:#0B1A13;--emerald-soft:#1D3A2D;
+  --honey:#E7B545;--honey-fill:#E7B545;--honey-soft:#3A2F14;--danger:#E88373;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0;width:100%}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--emerald);padding:0}
+input[type=number]{text-align:center}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:7px 12px}
+button.primary{background:var(--emerald);color:var(--emerald-ink);border-color:var(--emerald);font-weight:700}
+button.ghost{background:transparent}
+button.danger{color:var(--danger)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+
+/* header */
+.top{display:flex;gap:8px;align-items:center;padding:12px 0 4px;flex-wrap:wrap}
+.top select{width:auto;flex:1 1 160px}
+.sync{font-size:13px;color:var(--muted);margin-left:auto}
+.hero{padding:10px 0 16px;border-bottom:2px solid var(--line);display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+@media (max-width:559px){.hero{grid-template-columns:auto 1fr;row-gap:6px}.hero input.name{font-size:clamp(24px,7.5vw,34px)}
+  .pbbox{grid-column:2;justify-self:start;display:flex;align-items:baseline;gap:6px;padding:2px 10px}.pbbox b{font-size:20px}}
+.portrait{width:clamp(84px,22vw,150px);aspect-ratio:1/1.1547;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--emerald);padding:3px;border:none;border-radius:0;cursor:pointer}
+.portrait>*{width:100%;height:100%;clip-path:inherit;object-fit:cover;display:flex;align-items:center;justify-content:center;background:var(--emerald-soft);font-family:var(--display);font-size:clamp(30px,8vw,54px);color:var(--emerald)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.swatch{display:flex;align-items:center;gap:8px;text-align:left;padding:8px}
+.swatch i{width:26px;height:30px;flex:none;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.swatch[aria-pressed=true]{border:2px solid var(--emerald);font-weight:700}
+.cbtn{width:30px;height:34px;padding:0;border:2px solid var(--line);border-radius:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.cbtn[aria-pressed=true]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.cgrid{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
+.hexin{width:110px;font-family:ui-monospace,Menlo,Consolas,monospace}
+input[type=range]{padding:0;accent-color:var(--emerald)}
+.hero input.name{font-family:var(--display);font-size:clamp(30px,6vw,48px);font-weight:700;border:none;background:transparent;padding:0;line-height:1.1;letter-spacing:-.01em}
+.hero .sub{color:var(--muted);margin-top:4px}
+.pbbox{text-align:center;border:2px solid var(--honey);border-radius:10px;padding:6px 12px;background:var(--honey-soft)}
+.pbbox b{display:block;font-family:var(--display);font-size:26px;color:var(--honey);line-height:1}
+.pbbox span{font-size:12px;color:var(--muted)}
+
+/* tabs */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--panel);border-top:1px solid var(--line);
+  display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;max-width:140px;border:none;border-radius:0;background:transparent;padding:12px 4px;font-size:14px;color:var(--muted);border-top:3px solid transparent}
+nav.tabs button[aria-selected=true]{color:var(--emerald);border-top-color:var(--honey-fill);font-weight:700}
+
+h2{font-family:var(--display);font-weight:500;font-size:24px;margin:24px 0 10px}
+h3{font-family:var(--display);font-weight:500;font-size:19px;margin:18px 0 8px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.grid2{display:grid;gap:16px}
+@media (min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fields{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+label.f{justify-content:flex-end;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
+label.f>input,label.f>select,label.f>textarea{color:var(--ink);font-size:16px}
+
+/* honeycomb abilities: the one bold element */
+.comb{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 10px;padding:6px 0 18px;max-width:520px;margin:0 auto}
+@media (min-width:820px){.comb{grid-template-columns:repeat(6,1fr);max-width:none}.comb .cell:nth-child(even){margin-top:44px}}
+.cell{position:relative}
+.hex{aspect-ratio:1/1.1547;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--emerald);padding:3px}
+.hex-in{width:100%;height:100%;clip-path:inherit;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.hex .ab{font-size:13px;color:var(--muted);letter-spacing:.04em}
+.hex .mod{font-family:var(--display);font-weight:700;font-size:clamp(26px,5vw,36px);line-height:1.05;color:var(--ink)}
+.hex input{width:56px;padding:2px;border-radius:14px;border-color:var(--honey);background:var(--honey-soft);font-weight:700}
+.save{display:flex;justify-content:center;align-items:center;gap:4px;font-size:13px;margin-top:4px}
+.save b{min-width:2.2em;text-align:right}
+
+.skills{columns:1;column-gap:24px}
+@media (min-width:560px){.skills{columns:2}}
+.skill{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);break-inside:avoid}
+.skill .nm{flex:1}
+.skill .ab{font-size:12px;color:var(--muted);width:30px}
+.skill b{width:36px;text-align:right}
+.tri{width:28px;height:28px;padding:0;border-radius:50%;font-size:12px;line-height:1}
+.tri[data-v="1"]{background:var(--emerald);color:var(--emerald-ink);border-color:var(--emerald)}
+.tri[data-v="2"]{background:var(--honey-fill);color:#2A1D00;border-color:var(--honey)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.stat b{display:block;font-variant-numeric:lining-nums;font-family:var(--display);font-size:30px;line-height:1.1}
+.stat span{font-size:13px;color:var(--muted)}
+
+.hp{display:grid;gap:12px}
+.hpbig{font-family:var(--display);font-size:52px;line-height:1;font-weight:700}
+.hpbar{height:10px;border-radius:5px;background:var(--emerald-soft);overflow:hidden}
+.hpbar i{display:block;height:100%;background:var(--emerald);transition:width .25s}
+@media (prefers-reduced-motion:reduce){.hpbar i{transition:none}}
+
+.pips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pip{width:26px;height:30px;padding:0;border:2px solid var(--honey);background:var(--honey-fill);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);border-radius:0}
+.pip.spent{background:var(--line)}
+.pip.bad{background:var(--danger)}
+
+details.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:8px 0}
+details.item>summary{list-style:none;cursor:pointer;padding:10px 12px;display:flex;gap:10px;align-items:center}
+details.item>summary::-webkit-details-marker{display:none}
+details.item>summary .t{flex:1;font-weight:700}
+details.item[open]>summary{border-bottom:1px solid var(--line)}
+details.item .body{padding:12px;display:grid;gap:10px}
+.tag{font-size:12px;border-radius:10px;padding:1px 8px;background:var(--emerald-soft);color:var(--ink);white-space:nowrap}
+.tag.h{background:var(--honey-soft)}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:16px;color:var(--muted);text-align:center}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);max-width:560px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.conds{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cond{display:inline-flex;align-items:center;gap:6px;border-radius:14px;padding:3px 10px;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--panel)}
+.cond i{width:10px;height:10px;border-radius:50%;flex:none}
+.condgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.condgrid button[aria-pressed=true]{border:2px solid var(--emerald);font-weight:700}
+#banner{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translate(-50%,-160%);z-index:30;width:min(440px,calc(100% - 24px));
+  background:var(--panel);border:1px solid var(--line);border-left:8px solid var(--c,var(--danger));border-radius:10px;padding:10px 14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);transition:transform .35s cubic-bezier(.2,1.3,.4,1);cursor:pointer}
+#banner.on{transform:translate(-50%,0)}
+#banner b{display:block;font-family:var(--display);font-size:20px}
+#banner span{font-size:14px;color:var(--muted)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:25;opacity:0;background:radial-gradient(ellipse at center,transparent 45%,var(--c,#c0392b) 130%)}
+#fx.go{animation:fxflash .9s ease-out}
+@keyframes fxflash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+.glow{animation:glow 1s ease-out}
+@keyframes glow{0%{box-shadow:0 0 0 0 var(--c)}100%{box-shadow:0 0 0 18px transparent}}
+@media (prefers-reduced-motion:reduce){#banner{transition:none}#fx.go,.shake,.glow{animation:none}}
+#fog{position:fixed;inset:-20%;pointer-events:none;z-index:5;opacity:0;transition:opacity .8s;
+  --f:color-mix(in srgb,var(--muted) 45%,transparent);
+  background:radial-gradient(40% 30% at 20% 30%,var(--f),transparent 70%),radial-gradient(35% 25% at 75% 20%,var(--f),transparent 70%),
+    radial-gradient(45% 35% at 60% 75%,var(--f),transparent 70%),radial-gradient(30% 25% at 15% 85%,var(--f),transparent 70%)}
+#fog::after{content:"";position:absolute;inset:0;background:inherit;transform:scale(1.3) rotate(8deg);opacity:.7}
+body.hidden-mode #fog{opacity:1;animation:drift 26s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translate(-4%,-2%)}to{transform:translate(4%,3%)}}
+body.hidden-mode #hero,body.hidden-mode main{filter:saturate(.45);opacity:.86;transition:opacity .8s,filter .8s}
+body.hidden-mode .portrait{opacity:.45;filter:blur(1px)}
+.cond.stealth{border-style:dashed;border-color:var(--muted);background:transparent}
+@media (prefers-reduced-motion:reduce){body.hidden-mode #fog{animation:none}#fog{transition:none}}
+.rb{background:none;border:none;border-radius:4px;padding:0 3px;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.rb:hover{background:var(--honey-soft)}
+.stat[data-act=roll]{cursor:pointer}
+.stat[data-act=roll]:hover{border-color:var(--honey-fill)}
+#diceFab{position:fixed;right:14px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:11;width:58px;height:66px;border:none;border-radius:0;padding:0;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--honey-fill);color:#2A1D00;font-family:var(--display);font-weight:700;font-size:15px;line-height:1.1}
+#diceFab small{display:block;font-size:10px;font-family:var(--body)}
+.seg{display:flex;width:100%;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:none;border-radius:0;background:transparent;padding:8px 4px;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--emerald);color:var(--emerald-ink);font-weight:700}
+.dice{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.dice button{font-family:var(--display);font-weight:700;font-size:18px;padding:10px 4px}
+#rollCard{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom));transform:translate(-50%,30px) scale(.9);opacity:0;z-index:28;pointer-events:none;
+  width:min(360px,calc(100% - 24px));background:var(--panel);border:2px solid var(--pc,var(--honey-fill));border-radius:14px;padding:12px 16px;text-align:center;
+  box-shadow:0 12px 30px rgba(0,0,0,.3);transition:transform .25s cubic-bezier(.2,1.4,.4,1),opacity .2s}
+#rollCard.on{opacity:1;transform:translate(-50%,0) scale(1);pointer-events:auto;cursor:pointer}
+#rollCard .big{font-family:var(--display);font-size:64px;font-weight:700;line-height:1}
+#rollCard.n20{border-color:#E2A93A;box-shadow:0 0 0 4px #E2A93A55,0 12px 30px rgba(0,0,0,.3)}
+#rollCard.n20 .big{color:#B97A0B}
+#rollCard.n1{border-color:var(--danger)}
+#rollCard.n1 .big{color:var(--danger)}
+body.dm #tabs{display:none}
+.dmgrid{display:grid;gap:16px;align-items:start}
+.feedcol{order:-1}
+#feed,#wlog{max-height:280px;overflow-y:auto;display:grid;gap:6px}
+@media (min-width:900px){.dmgrid{grid-template-columns:1fr 340px}.feedcol{order:1}#feed{max-height:45vh}#wlog{max-height:none}}
+.roll{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--pc);border-radius:8px;padding:8px 10px}
+.roll.new{animation:rollin .6s ease-out}
+@keyframes rollin{from{background:var(--honey-soft);transform:translateX(12px)}to{transform:none}}
+.roll .rt{font-family:var(--display);font-size:28px;line-height:1}
+.rt.n20{color:#B97A0B}.rt.n1{color:var(--danger)}
+.cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.dmcard{background:var(--panel);border:1px solid var(--line);border-top:6px solid var(--pc);border-radius:10px;padding:12px;display:grid;gap:8px;transition:opacity .2s}
+.dmcard.dim{opacity:.35}
+.dmcard header{display:flex;gap:10px;align-items:center}
+.dmcard .mp{width:44px;height:50px;flex:none;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--pc);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--display);font-size:22px;overflow:hidden}
+.dmcard .mp img,.dmcard .mp video{width:100%;height:100%;object-fit:cover}
+.dmcard .hpnum{font-family:var(--display);font-size:30px;line-height:1}
+.dmcard .hpbar i{background:var(--pc)}
+.mini{display:flex;gap:12px;flex-wrap:wrap;font-size:14px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){#rollCard{transition:none}.roll.new{animation:none}}
+.thumb{display:inline-flex;flex:none;align-items:center;justify-content:center;overflow:hidden;background:var(--pc);color:#fff;font-family:var(--display);font-weight:700;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.thumb img,.thumb video{width:100%;height:100%;object-fit:cover}
+.badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--danger);color:#fff;font-size:12px;font-weight:700;text-align:center;margin-left:4px}
+.note{background:color-mix(in srgb,var(--honey-soft) 60%,var(--panel));border:1px solid var(--line);border-radius:4px 14px 4px 14px;padding:16px;box-shadow:inset 0 0 30px color-mix(in srgb,var(--honey-fill) 18%,transparent)}
+.note .msg{font-family:var(--display);font-size:20px;line-height:1.4;white-space:pre-wrap;margin:10px 0}
+.wrow{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:8px;margin:4px 0}
+.wrow.unread{border:2px solid var(--honey-fill);background:var(--honey-soft)}
+.wrow .grow{flex:1;min-width:0}
+.wrow .snip{display:block;color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#banner .row{flex-wrap:nowrap;gap:12px}
+#gate{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+#gate .box{max-width:460px;width:100%;text-align:center}
+#gate h1{font-family:var(--display);font-size:clamp(34px,8vw,54px);margin:0 0 6px}
+#gate .hexmark{width:88px;height:102px;margin:0 auto 14px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--emerald);display:flex;align-items:center;justify-content:center;color:var(--emerald-ink);font-family:var(--display);font-size:40px;font-weight:700}
+#gate button.primary{font-size:17px;padding:12px 20px;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+</style>
+<style id="themeVars"></style>
+<meta name="theme-color" content="#1E6B4B" id="themeColor">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <select id="charPick" aria-label="Choose character"></select>
+    <button id="menuBtn">Characters</button>
+    <button id="inboxBtn" data-act="inbox">Whispers<span id="inboxBadge"></span></button>
+    <button id="themeBtn" class="ghost" aria-label="Switch between light and dark mode">Light / dark</button>
+    <span class="sync" id="sync">Saved on this device</span>
+  </div>
+  <div id="hero"></div>
+  <main id="view"></main>
+</div>
+<nav class="tabs" id="tabs" role="tablist"></nav>
+
+<dialog id="menu">
+  <h3 style="margin-top:0">Characters</h3>
+  <div class="toolbar">
+    <button class="primary" data-act="new">New character</button>
+    <button data-act="dup">Duplicate this one</button>
+    <button data-act="gotolook">Portrait and colors</button>
+    <button data-act="dmenter" id="dmBtn">Open DM screen</button>
+  </div>
+  <h3>Back up or move a character</h3>
+  <p class="muted small">Export saves the sheet as a file. Import reads a file or pasted text from this tracker.</p>
+  <div class="toolbar">
+    <button data-act="export" id="exportBtn">Export file</button>
+    <button data-act="copy">Copy as text</button>
+    <label class="small" style="display:inline-flex;gap:6px;align-items:center"><span>Import file</span><input type="file" id="importFile" accept=".json,application/json" style="width:auto"></label>
+  </div>
+  <textarea id="importText" placeholder="Or paste character text here"></textarea>
+  <div class="toolbar"><button data-act="importText">Import pasted text</button></div>
+  <div id="dmOnly" hidden>
+    <h3>Player access</h3>
+    <p class="muted small">Add each player's Google address. Only these accounts, and yours, can open the campaign.</p>
+    <div id="accessList"></div>
+    <div class="row" style="flex-wrap:nowrap"><input id="newEmail" type="email" placeholder="player@gmail.com" autocomplete="off"><button data-act="addEmail">Add</button></div>
+    <h3>Party</h3>
+    <div class="toolbar"><label class="small" style="display:inline-flex;gap:6px;align-items:center"><span style="text-decoration:underline;cursor:pointer">Import party file</span><input type="file" id="partyFile" accept=".json,application/json" style="width:auto"></label></div>
+  </div>
+  <h3>Alerts on this device</h3>
+  <p class="muted small">Plays when the character takes damage, heals, or gains a condition, including changes made from another device.</p>
+  <div class="toolbar" id="alertPrefs"></div>
+  <div class="toolbar"><button data-act="testalert">Test alert</button></div>
+  <h3>Account</h3>
+  <div class="toolbar"><button data-act="signout">Sign out</button></div>
+  <h3>Delete</h3>
+  <div class="toolbar"><button class="danger" data-act="del">Delete this character</button></div>
+  <div class="toolbar" style="justify-content:flex-end"><button data-act="close">Done</button></div>
+</dialog>
+<dialog id="condDlg"></dialog>
+<button id="diceFab" data-act="dice" aria-label="Dice roller">Roll<small id="fabMode"></small></button>
+<dialog id="diceDlg"></dialog>
+<dialog id="whisperDlg"></dialog>
+<div id="rollCard" role="status" aria-live="polite"></div>
+<div id="gate"><div class="box"><div class="hexmark">B</div><h1>Bag of Holding</h1>
+  <p class="muted" id="gateMsg">Sign in with the Google account your DM invited.</p>
+  <button class="primary" id="signIn">Sign in with Google</button>
+  <div id="emailWrap"><button class="ghost" id="emailToggle" style="margin-top:8px">Or sign in with your email</button>
+    <div id="emailBox" hidden style="margin-top:8px">
+      <div class="row" style="flex-wrap:nowrap"><input id="emailInput" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"><button class="primary" id="emailSend">Send link</button></div>
+      <p class="small muted" style="margin:6px 0 0">We'll email you a link. Open it on this device and you're in. No password needed.</p>
+    </div></div>
+  <p class="small muted" id="gateSub"></p></div></div>
+<dialog id="claimDlg"></dialog>
+<div id="fog" aria-hidden="true"></div>
+<div id="fx"></div>
+<div id="banner" role="alert" aria-live="assertive"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ---------- rules data ---------- */
+const AB = ["str","dex","con","int","wis","cha"];
+const ABN = {str:"Strength",dex:"Dexterity",con:"Constitution",int:"Intelligence",wis:"Wisdom",cha:"Charisma"};
+const SKILLS = [
+ ["acrobatics","Acrobatics","dex"],["animal","Animal Handling","wis"],["arcana","Arcana","int"],
+ ["athletics","Athletics","str"],["deception","Deception","cha"],["history","History","int"],
+ ["insight","Insight","wis"],["intimidation","Intimidation","cha"],["investigation","Investigation","int"],
+ ["medicine","Medicine","wis"],["nature","Nature","int"],["perception","Perception","wis"],
+ ["performance","Performance","cha"],["persuasion","Persuasion","cha"],["religion","Religion","int"],
+ ["sleight","Sleight of Hand","dex"],["stealth","Stealth","dex"],["survival","Survival","wis"]];
+const SLOTS = {1:[2],2:[3],3:[4,2],4:[4,3],5:[4,3,2],6:[4,3,3],7:[4,3,3,1],8:[4,3,3,2],9:[4,3,3,3,1],
+ 10:[4,3,3,3,2],11:[4,3,3,3,2,1],12:[4,3,3,3,2,1],13:[4,3,3,3,2,1,1],14:[4,3,3,3,2,1,1],
+ 15:[4,3,3,3,2,1,1,1],16:[4,3,3,3,2,1,1,1],17:[4,3,3,3,2,1,1,1,1],18:[4,3,3,3,3,1,1,1,1],
+ 19:[4,3,3,3,3,2,1,1,1],20:[4,3,3,3,3,2,2,1,1]};
+const TARGETS = [["ac","Armor Class"],["init","Initiative"],["speed","Speed"],["hpmax","Max HP"],
+ ["spelldc","Spell save DC"],["spellatk","Spell attack"],["attack","Weapon attack rolls"],["damage","Weapon damage"],
+ ["allsaves","All saving throws"],["passive","Passive Perception"],
+ ...AB.map(a=>["save:"+a,ABN[a]+" save"]),...SKILLS.map(s=>["skill:"+s[0],s[1]+" skill"])];
+const SENSES = ["Darkvision","Blindsight","Tremorsense","Truesight","See invisibility","Devil's sight","Keen smell","Other"];
+const TRICKSTERS = ["I'jin","Kubazan","Moa","Nangnang","Obo'laka","Papazotl","Shagambi","Unkh","Wongo"];
+const THEMES = [
+ ["emerald","Emerald hive","#1E6B4B","#E2A93A"],["ruby","Ruby flame","#9B2335","#F28C28"],
+ ["sapphire","Sapphire tide","#1F4E8C","#6CC4DF"],["amethyst","Amethyst hex","#5B3A8C","#D98FD0"],
+ ["shadow","Shadowstep","#3A3F47","#9FB4C7"],["sun","Sunforge","#8A5A12","#F2C84B"],
+ ["frost","Rimefrost","#2F6F8F","#BFE3F2"],["grave","Grave moss","#4E5B31","#C9C27A"]];
+const FONTS = [["Fraunces","Storybook"],["Cinzel","Carved stone"],["Uncial Antiqua","Old druidic"],["Pirata One","Blackletter"],["IM Fell English","Weathered print"]];
+function lum(hex){const n=parseInt(String(hex).slice(1),16);if(isNaN(n))return 0;const ch=[n>>16,(n>>8)&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*ch[0]+.7152*ch[1]+.0722*ch[2];}
+function applyTheme(c){
+  const L=c.look, p=/^#[0-9a-f]{6}$/i.test(L.primary)?L.primary:"#1E6B4B", a=/^#[0-9a-f]{6}$/i.test(L.accent)?L.accent:"#E2A93A";
+  const font=`"${(L.font||"Fraunces").replace(/"/g,"")}",Georgia,serif`;
+  const light=`--display:${font};--bg:color-mix(in srgb,${p} 9%,#F6F7F2);--panel:color-mix(in srgb,${p} 3%,#FDFDFB);--line:color-mix(in srgb,${p} 24%,#D2D5CE);
+    --emerald:color-mix(in srgb,${p} 88%,black);--emerald-ink:${lum(p)>.35?"#111":"#fff"};--emerald-soft:color-mix(in srgb,${p} 16%,white);
+    --honey:color-mix(in srgb,${a} 58%,black);--honey-fill:${a};--honey-soft:color-mix(in srgb,${a} 24%,white);`;
+  const dark=`--display:${font};--bg:color-mix(in srgb,${p} 15%,#0B0D0C);--panel:color-mix(in srgb,${p} 20%,#131615);--line:color-mix(in srgb,${p} 38%,#2A2D2C);
+    --emerald:color-mix(in srgb,${p} 55%,white);--emerald-ink:#0B0D0C;--emerald-soft:color-mix(in srgb,${p} 35%,#131615);
+    --honey:color-mix(in srgb,${a} 80%,white);--honey-fill:${a};--honey-soft:color-mix(in srgb,${a} 24%,#131615);`;
+  $("#themeVars").textContent=`:root{${light}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}
+:root[data-theme="dark"]{${dark}}`;
+  $("#themeColor").setAttribute("content",p);
+}
+const portraitSrc = pt => (pt && (pt.url || pt.data)) || "";
+function portraitHTML(c){
+  const pt=c.look.portrait, src=portraitSrc(pt), pos=`object-position:50% ${num(pt.pos)}%`;
+  const inner = !src ? `<span>${esc((c.name||"?").trim().charAt(0).toUpperCase())}</span>`
+    : pt.kind==="video" ? `<video src="${esc(src)}" autoplay muted loop playsinline style="${pos}"></video>`
+    : `<img src="${esc(src)}" alt="" style="${pos}">`;
+  return `<button class="portrait" data-act="gotolook" aria-label="Change portrait and theme">${inner}</button>`;
+}
+const DTYPES = ["acid","bludgeoning","cold","fire","force","lightning","necrotic","piercing","poison","psychic","radiant","slashing","thunder"];
+const DKIND = {resist:"Resistant",immune:"Immune",vuln:"Vulnerable"};
+let dmgRows = [{amt:"",type:"slashing"}], dmgMagic = false;
+const CONDS = {
+ blinded:["#6B7280","Can't see and fails checks that need sight. Attacks against you have advantage; your attacks have disadvantage."],
+ charmed:["#D0679B","Can't attack the charmer or target it with harmful effects. The charmer has advantage on social checks with you."],
+ deafened:["#8B8FA3","Can't hear and fails checks that need hearing."],
+ frightened:["#8E44AD","Disadvantage on checks and attacks while the source is in sight. Can't willingly move closer to it."],
+ grappled:["#B7791F","Speed is 0."],
+ incapacitated:["#7F8C8D","Can't take actions or reactions."],
+ invisible:["#5DADE2","Attacks against you have disadvantage; your attacks have advantage."],
+ paralyzed:["#F1C40F","Incapacitated and can't move or speak. Automatically fail Str and Dex saves. Attacks against you have advantage; hits from within 5 ft are critical."],
+ petrified:["#95A5A6","Turned to stone and incapacitated. Resistance to all damage; immune to poison and disease."],
+ poisoned:["#3FA34D","Disadvantage on attack rolls and ability checks."],
+ prone:["#A0522D","Can only crawl. Disadvantage on attacks. Melee attacks against you have advantage; ranged attacks have disadvantage."],
+ restrained:["#7D5A3C","Speed is 0. Attacks against you have advantage; your attacks have disadvantage. Disadvantage on Dex saves."],
+ stunned:["#E67E22","Incapacitated and can't move. Automatically fail Str and Dex saves. Attacks against you have advantage."],
+ unconscious:["#34495E","Incapacitated, drops what it holds, and falls prone. Automatically fail Str and Dex saves. Hits from within 5 ft are critical."],
+ hidden:["#6C7A89","Unseen and unheard. Your attacks against creatures that can't see you have advantage; their attacks against you have disadvantage. Attacking or making noise gives away your location."],
+ exhaustion:["#9C640C","Apply your table's exhaustion rules for the current level."]
+};
+const cap = t=>String(t).charAt(0).toUpperCase()+String(t).slice(1);
+const ORD = n=>["Cantrips","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"][n];
+
+/* ---------- helpers ---------- */
+const $ = s=>document.querySelector(s);
+const uid = ()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const esc = v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const num = v=>{const n=parseFloat(v);return isNaN(n)?0:n};
+const sgn = n=>(n>=0?"+":"")+n;
+const clone = o=>JSON.parse(JSON.stringify(o));
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),1800)}
+
+/* ---------- character model ---------- */
+function blank(){
+  return {
+    id:uid(), name:"New character", player:"", race:"Dragonborn", background:"", alignment:"", xp:0,
+    classes:[{id:uid(),name:"Druid",subclass:"",level:1,hitDie:8,caster:"full"}],
+    abilities:{str:10,dex:10,con:10,int:10,wis:10,cha:10}, saves:{},
+    skills:{}, hp:{max:8,cur:8,temp:0}, hdUsed:0, death:{s:0,f:0},
+    acBase:10, acDex:true, acDexCap:"", acAbil2:"", shield:false, speed:30, initBonus:0,
+    spellAbility:"wis", slotsUsed:{}, slotOverride:"", prepOverride:"",
+    breath:{on:false,ancestry:"",dmgType:"",shape:"15 ft cone or 30 ft line"},
+    spells:[], attacks:[], features:[], bonuses:[], inventory:[], senses:[], quirks:[], defenses:[], hpLog:[], conditions:[],
+    trickster:{god:"",since:"",trait:"",boon:"",notes:""},
+    coins:{cp:0,sp:0,ep:0,gp:0,pp:0},
+    notes:{traits:"",backstory:"",session:"",languages:"Common, Draconic",profs:""},
+    look:{theme:"emerald",primary:"#1E6B4B",accent:"#E2A93A",font:"Fraunces",portrait:{kind:"",asset:"",data:"",pos:30}},
+    updated:Date.now()
+  };
+}
+function starter(){
+  const c = blank();
+  c.fresh = true; // untouched sample; dropped when synced sheets exist
+  c.name = "Emerald Druid";
+  c.classes[0].subclass = "Circle of the Hive";
+  c.abilities = {str:10,dex:12,con:14,int:10,wis:16,cha:10};
+  c.saves = {int:true,wis:true};
+  c.skills = {nature:1,perception:1};
+  c.hp = {max:10,cur:10,temp:0};
+  c.acBase = 11;
+  c.breath = {on:true,ancestry:"Emerald",dmgType:"Psychic",shape:"15 ft cone or 30 ft line"};
+  c.defenses = [{id:uid(),type:"psychic",kind:"resist",nonmagical:false,source:"Draconic Resistance",active:true}];
+  c.notes.profs = "Light and medium armor, shields; clubs, daggers, darts, javelins, maces, quarterstaffs, scimitars, sickles, slings, spears; herbalism kit";
+  c.features = [
+    {id:uid(),name:"Breath Weapon",source:"Gem Dragonborn",max:"PB",used:0,recharge:"long",desc:"Replace one attack. Damage and DC are worked out on the Combat tab."},
+    {id:uid(),name:"Draconic Resistance",source:"Gem Dragonborn",max:"",used:0,recharge:"none",desc:"Resistance to psychic damage."},
+    {id:uid(),name:"Psionic Mind",source:"Gem Dragonborn",max:"",used:0,recharge:"none",desc:"Telepathy 30 ft with creatures that know a language."},
+    {id:uid(),name:"Gem Flight",source:"Gem Dragonborn (level 5)",max:"1",used:0,recharge:"long",desc:"Bonus action: spectral wings, flying speed equal to walking speed for 1 minute."},
+    {id:uid(),name:"Wild Shape",source:"Druid",max:"2",used:0,recharge:"short",desc:"Change the max uses and recharge to match the rules your table uses."},
+    {id:uid(),name:"Circle of the Hive features",source:"Add from her sourcebook",max:"",used:0,recharge:"none",desc:"Enter each subclass feature as its own entry so uses and recharges are tracked."}
+  ];
+  c.spells = [
+    {id:uid(),name:"Druidcraft",level:0,prepared:true,always:false,conc:false,ritual:false,time:"1 action",range:"30 ft",dur:"Instant",comp:"V, S",source:"PHB",desc:""},
+    {id:uid(),name:"Goodberry",level:1,prepared:true,always:false,conc:false,ritual:false,time:"1 action",range:"Touch",dur:"Instant",comp:"V, S, M",source:"PHB",desc:""}
+  ];
+  c.attacks = [{id:uid(),name:"Quarterstaff",ability:"str",prof:true,bonus:0,dmg:"1d6",addMod:true,dmgType:"bludgeoning",notes:"Versatile (1d8)"}];
+  c.inventory = [
+    {id:uid(),name:"Leather armor",qty:1,weight:10,equipped:true,attuned:false,notes:"AC 11 + Dex"},
+    {id:uid(),name:"Druidic focus",qty:1,weight:0,equipped:true,attuned:false,notes:""},
+    {id:uid(),name:"Explorer's pack",qty:1,weight:59,equipped:false,attuned:false,notes:""}
+  ];
+  c.coins.gp = 15;
+  return c;
+}
+function normalize(c){ // fills gaps in imported or older sheets
+  const b = blank();
+  const hadDefs = Array.isArray(c.defenses);
+  for(const k in b){ if(c[k]===undefined) c[k]=b[k]; }
+  for(const k of ["abilities","hp","death","breath","coins","notes","trickster","look"]) c[k]=Object.assign(clone(b[k]),c[k]||{});
+  c.look.portrait=Object.assign(clone(b.look.portrait),c.look.portrait||{});
+  ["spells","attacks","features","bonuses","inventory","classes","senses","quirks","defenses","hpLog","conditions"].forEach(k=>{ if(!Array.isArray(c[k])) c[k]=[]; c[k].forEach(x=>{ if(!x.id) x.id=uid(); }); });
+  if(!c.classes.length) c.classes = b.classes;
+  if(!hadDefs && c.breath.on && c.breath.dmgType) // older sheets: carry over dragonborn resistance
+    c.defenses.push({id:uid(),type:String(c.breath.dmgType).toLowerCase(),kind:"resist",nonmagical:false,source:"Draconic Resistance",active:true});
+  return c;
+}
+
+/* ---------- derived numbers ---------- */
+function compute(c){
+  const o = {};
+  const mod = a=>Math.floor((num(c.abilities[a])-10)/2);
+  const bon = t=>c.bonuses.filter(x=>x.active!==false&&x.target===t).reduce((s,x)=>s+num(x.value),0);
+  const lvl = Math.max(1,c.classes.reduce((s,k)=>s+num(k.level),0));
+  const pb = 2+Math.floor((lvl-1)/4);
+  o.lvl=lvl; o.pb=sgn(pb);
+  const M={}; AB.forEach(a=>{M[a]=mod(a); o["mod:"+a]=sgn(M[a]);
+    o["save:"+a]=sgn(M[a]+(c.saves[a]?pb:0)+bon("save:"+a)+bon("allsaves"));});
+  const sk={}; SKILLS.forEach(([k,,a])=>{sk[k]=M[a]+num(c.skills[k]||0)*pb+bon("skill:"+k); o["skill:"+k]=sgn(sk[k]);});
+  o.passive = 10+sk.perception+bon("passive");
+  o.passinv = 10+sk.investigation; o.passins = 10+sk.insight;
+  o.init = sgn(M.dex+num(c.initBonus)+bon("init"));
+  let dex = c.acDex ? M.dex : 0;
+  if(c.acDex && c.acDexCap!=="" && c.acDexCap!=null) dex = Math.min(dex,num(c.acDexCap));
+  o.ac = num(c.acBase)+dex+(c.acAbil2?(M[c.acAbil2]||0):0)+(c.shield?2:0)+bon("ac");
+  o.speed = num(c.speed)+bon("speed")+" ft";
+  const hpmax = num(c.hp.max)+bon("hpmax");
+  o.hpmax=hpmax; o.hpcur=num(c.hp.cur); o.hptemp=num(c.hp.temp);
+  o.hppct = Math.max(0,Math.min(100,hpmax?o.hpcur/hpmax*100:0));
+  const sm = M[c.spellAbility]||0;
+  o.spellmod=sgn(sm); o.spelldc=8+pb+sm+bon("spelldc"); o.spellatk=sgn(pb+sm+bon("spellatk"));
+  const casters = c.classes.filter(k=>["full","half","third"].includes(k.caster));
+  const cl = casters.length===1 // single spellcasting class uses its own table; multiclass rounds down
+    ? (k=>{const l=num(k.level); return k.caster==="full"?l : k.caster==="half"?(l>=2?Math.ceil(l/2):0) : (l>=3?Math.ceil(l/3):0);})(casters[0])
+    : casters.reduce((s,k)=>s+(k.caster==="full"?num(k.level):k.caster==="half"?Math.floor(num(k.level)/2):Math.floor(num(k.level)/3)),0);
+  let slots = SLOTS[Math.min(20,cl)]||[];
+  if(String(c.slotOverride).trim()) slots = String(c.slotOverride).split(/[ ,]+/).map(num).filter((n,i,a)=>i<9);
+  o.slots = slots;
+  const main = c.classes.find(k=>k.caster==="full")||c.classes[0];
+  const prepLimit = String(c.prepOverride).trim()!=="" ? num(c.prepOverride) : Math.max(1,sm+num(main?main.level:1));
+  o.preplimit=prepLimit;
+  o.prepcount = c.spells.filter(s=>s.prepared&&!s.always&&num(s.level)>0).length;
+  const dice = lvl>=17?4:lvl>=11?3:lvl>=5?2:1;
+  o.breathdmg = dice+"d10 "+(c.breath.dmgType||"");
+  o.breathdc = "DC "+(8+M.con+pb)+" Dex save";
+  const hd = {}; c.classes.forEach(k=>{hd["d"+k.hitDie]=(hd["d"+k.hitDie]||0)+num(k.level)});
+  o.hd = Object.entries(hd).map(([d,n])=>n+d).join(" + ");
+  o.hdleft = Math.max(0,lvl-num(c.hdUsed));
+  o.carry = num(c.abilities.str)*15;
+  o.weight = Math.round(c.inventory.reduce((s,i)=>s+num(i.weight)*num(i.qty),0)*10)/10;
+  o.attuned = c.inventory.filter(i=>i.attuned).length;
+  c.attacks.forEach(a=>{
+    const m = a.ability==="spell"?sm:(a.ability==="finesse"?Math.max(M.str,M.dex):(M[a.ability]||0));
+    const isSpell = a.ability==="spell";
+    o["atk:"+a.id] = sgn((a.prof?pb:0)+m+num(a.bonus)+(isSpell?bon("spellatk"):bon("attack")));
+    const dm = (a.addMod?m:0)+(isSpell?0:bon("damage"));
+    o["dmg:"+a.id] = (a.dmg||"—")+(dm?" "+(dm>0?"+ ":"− ")+Math.abs(dm):"")+(a.dmgType?" "+a.dmgType:"");
+  });
+  c.features.forEach(f=>{o["fmax:"+f.id]=evalMax(f.max,M,pb,lvl)});
+  o.M=M;
+  return o;
+}
+function evalMax(expr,M,pb,lvl){
+  const s = String(expr||"").trim().toUpperCase();
+  if(!s) return null;
+  const vals = {PB:pb,LEVEL:lvl,STR:M.str,DEX:M.dex,CON:M.con,INT:M.int,WIS:M.wis,CHA:M.cha};
+  const parts = s.replace(/\s+/g,"").match(/[+-]?[^+-]+/g)||[];
+  let total = 0;
+  for(const p of parts){
+    const neg = p[0]==="-"; const body = p.replace(/^[+-]/,"");
+    const factors = body.split("*"); let v = 1;
+    for(const f of factors){ if(f in vals) v*=vals[f]; else if(!isNaN(parseFloat(f))) v*=parseFloat(f); else return null; }
+    total += neg?-v:v;
+  }
+  return Math.max(1,Math.floor(total));
+}
+
+const LS = "hivekeeper.v1", LS_PREFS = "hivekeeper.v1.alerts";
+/* ---------- alerts ---------- */
+let prefs = {anim:true, sound:true, vibrate:true};
+try{ Object.assign(prefs, JSON.parse(localStorage.getItem(LS_PREFS)||"{}")); }catch(e){}
+let actx = null;
+function audio(){
+  if(!actx){ const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; actx=new A(); }
+  if(actx.state==="suspended") actx.resume();
+  return actx;
+}
+document.addEventListener("pointerdown",()=>{ if(prefs.sound) audio(); },{once:true}); // phones only allow sound after a first tap
+function tone(ctx,{type="sine",f0,f1,t0=0,dur=.3,vol=.3}){
+  const o=ctx.createOscillator(), g=ctx.createGain(), t=ctx.currentTime+t0;
+  o.type=type; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+dur+.05);
+}
+function thud(ctx){
+  const len=ctx.sampleRate*.25, buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+  const src=ctx.createBufferSource(), lp=ctx.createBiquadFilter(), g=ctx.createGain();
+  lp.type="lowpass"; lp.frequency.value=600; g.gain.value=.7; src.buffer=buf; src.connect(lp).connect(g).connect(ctx.destination); src.start();
+  tone(ctx,{f0:150,f1:45,dur:.35,vol:.6});
+}
+const SOUNDS = {
+  damage: ctx=>thud(ctx),
+  heal: ctx=>{ tone(ctx,{f0:660,f1:880,dur:.25,vol:.18}); tone(ctx,{f0:990,f1:1320,t0:.12,dur:.35,vol:.14}); },
+  condition: ctx=>{ tone(ctx,{type:"triangle",f0:440,f1:420,dur:.22,vol:.25}); tone(ctx,{type:"triangle",f0:330,f1:220,t0:.18,dur:.45,vol:.25}); },
+  whisper: ctx=>{
+    const len=Math.floor(ctx.sampleRate*.35), buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/len)*(Math.random()<.3?1:.3);
+    const src=ctx.createBufferSource(), hp=ctx.createBiquadFilter(), g=ctx.createGain();
+    hp.type="highpass"; hp.frequency.value=3000; g.gain.value=.25; src.buffer=buf; src.connect(hp).connect(g).connect(ctx.destination); src.start();
+    tone(ctx,{f0:392,f1:390,t0:.3,dur:1.4,vol:.12}); tone(ctx,{f0:587,f1:585,t0:.45,dur:1.2,vol:.07}); },
+  hide: ctx=>{
+    const len=ctx.sampleRate*.9, buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++){ const t=i/len; d[i]=(Math.random()*2-1)*Math.sin(Math.PI*t)*.5; }
+    const src=ctx.createBufferSource(), bp=ctx.createBiquadFilter(), g=ctx.createGain();
+    bp.type="bandpass"; bp.Q.value=.8; bp.frequency.setValueAtTime(1800,ctx.currentTime); bp.frequency.exponentialRampToValueAtTime(300,ctx.currentTime+.9);
+    g.gain.value=.5; src.buffer=buf; src.connect(bp).connect(g).connect(ctx.destination); src.start(); },
+  clear: ctx=>tone(ctx,{f0:520,f1:780,dur:.2,vol:.12})
+};
+function notify(kind, title, detail, color, opt={}){
+  const colors = {damage:"#C0392B", heal:"#27AE60", clear:"#2E86C1"};
+  const col = color || colors[kind] || "#C0392B";
+  const bn = $("#banner");
+  bn.style.setProperty("--c",col);
+  const txt = `<div><b>${esc(title)}</b>${detail?`<span>${esc(detail)}</span>`:""}</div>`;
+  bn.innerHTML = opt.thumb ? `<div class="row">${opt.thumb}${txt}</div>` : txt;
+  bn.onclick = ()=>{ bn.classList.remove("on"); if(opt.onclick) opt.onclick(); };
+  bn.classList.add("on"); clearTimeout(notify.h); notify.h=setTimeout(()=>bn.classList.remove("on"),opt.ms||5000);
+  if(prefs.anim && kind!=="clear" && kind!=="hide" && kind!=="whisper"){
+    const fx=$("#fx"); fx.style.setProperty("--c",col); fx.classList.remove("go"); void fx.offsetWidth; fx.classList.add("go");
+    const tgt = kind==="damage" ? document.querySelector(".hpbig")||document.querySelector(".portrait") : document.querySelector(".portrait");
+    if(tgt){ const cls = kind==="damage"?"shake":"glow"; tgt.style.setProperty("--c",col); tgt.classList.remove(cls); void tgt.offsetWidth; tgt.classList.add(cls); }
+  }
+  if(prefs.sound){ const ctx=audio(); if(ctx) try{ SOUNDS[kind](ctx); }catch(e){} }
+  if(prefs.vibrate && navigator.vibrate) navigator.vibrate(kind==="hide"?15:kind==="damage"?[80,40,140]:kind==="condition"?[40,40,40]:30);
+}
+function renderPrefs(){
+  $("#alertPrefs").innerHTML = [["anim","Animations"],["sound","Sound effects"],["vibrate","Vibration (Android)"]]
+    .map(([k,n])=>`<label class="row small"><input type="checkbox" data-pref="${k}" ${prefs[k]?"checked":""}> ${n}</label>`).join("");
+}
+function announceChanges(prev, next){ // compares two versions of a sheet and alerts on what changed
+  const hp0 = num(prev.hp.cur)+num(prev.hp.temp), hp1 = num(next.hp.cur)+num(next.hp.temp);
+  const logText = next.hpLog && next.hpLog[0] ? next.hpLog[0].text : "";
+  const had = new Set(prev.conditions.map(x=>x.name)), has = new Set(next.conditions.map(x=>x.name));
+  const added = next.conditions.filter(x=>!had.has(x.name));
+  const removed = prev.conditions.filter(x=>!has.has(x.name));
+  const fresh = next.hpLog && next.hpLog[0] && (!prev.hpLog[0] || next.hpLog[0].t!==prev.hpLog[0].t);
+  const m = fresh && /^Took (\d+)/.exec(logText);
+  if(hp1<hp0) notify("damage", `${next.name} took ${m?m[1]:hp0-hp1} damage`, (fresh?logText.replace(/^Took \d+: /,""):""));
+  else if(hp1>hp0 && num(next.hp.cur)>num(prev.hp.cur)) notify("heal", `${next.name} healed ${num(next.hp.cur)-num(prev.hp.cur)}`, "");
+  added.forEach((x,i)=>setTimeout(()=>notify(x.name==="hidden"?"hide":"condition", `${next.name} is ${condLabel(x)}`, (x.source?x.source+". ":"")+(CONDS[x.name]||["",""])[1], (CONDS[x.name]||["#8E44AD"])[0]), (hp1<hp0?1400:0)+i*1400));
+  if(!added.length && removed.length && hp1>=hp0) notify("clear", `No longer ${removed.map(condLabel).join(", ")}`, "");
+}
+const condLabel = x => x.name==="exhaustion" ? `exhausted (level ${num(x.level)||1})` : x.name==="hidden" && x.roll ? `hidden (Stealth ${x.roll})` : x.name;
+
+/* ---------- damage ---------- */
+function resolveDamage(c, parts, magical){
+  const defs = c.defenses.filter(d=>d.active!==false && !(d.nonmagical && magical));
+  const has = (t,k)=>defs.some(d=>d.type===t && d.kind===k);
+  let total = 0; const lines = [];
+  parts.forEach(pt=>{
+    const amt = Math.max(0,Math.floor(num(pt.amt))); if(!amt) return;
+    let f = amt, why = [];
+    if(has(pt.type,"immune")){ f = 0; why.push("immune"); }
+    else {
+      if(has(pt.type,"resist")){ f = Math.floor(f/2); why.push("resisted"); }
+      if(has(pt.type,"vuln")){ f = f*2; why.push("vulnerable"); }
+    }
+    total += f;
+    lines.push(`${f} ${pt.type}` + (why.length?` (${amt} ${why.join(", ")})`:""));
+  });
+  return {total, lines};
+}
+function applyDamage(c, parts, magical, hpmax){
+  const r = resolveDamage(c, parts, magical);
+  if(!r.lines.length) return null;
+  const before = {cur:num(c.hp.cur), temp:num(c.hp.temp), death:clone(c.death), conds:clone(c.conditions)};
+  let left = r.total;
+  const soak = Math.min(before.temp, left); c.hp.temp = before.temp - soak; left -= soak;
+  const overflow = Math.max(0, left - before.cur);
+  c.hp.cur = Math.max(0, before.cur - left);
+  const notes = [];
+  if(soak) notes.push(`temp HP absorbed ${soak}`);
+  if(r.total>0 && before.cur===0){ c.death.f = Math.min(3,num(c.death.f)+1); notes.push("already at 0 HP: one death save failure"); }
+  else if(before.cur>0 && c.hp.cur===0){ notes.push(overflow>=hpmax ? "massive damage: instant death" : "dropped to 0 HP");
+    if(!c.conditions.some(x=>x.name==="unconscious")) c.conditions.push({id:uid(),name:"unconscious",source:"Dropped to 0 HP",level:0}); }
+  if(r.total>0) notes.push(`if concentrating, DC ${Math.max(10,Math.floor(r.total/2))} Con save`);
+  const text = `Took ${r.total}: ${r.lines.join(" + ")}` + (notes.length?". "+notes.join("; ").replace(/^./,x=>x.toUpperCase())+".":"");
+  logHp(c, text, before);
+  return text;
+}
+function logHp(c, text, before){ c.hpLog.unshift({t:Date.now(), text, before}); c.hpLog = c.hpLog.slice(0,8); }
+
+/* ---------- storage ---------- */
+
+let chars = [], cur = null, tab = "sheet", db = null;
+function loadLocal(){
+  try{ const raw = localStorage.getItem(LS); if(raw){ const d=JSON.parse(raw); chars=(d.chars||[]).map(normalize); cur=d.cur; tab=d.tab||"sheet"; } }catch(e){}
+  if(!chars.length){ chars=[]; }
+  if(chars.length && !chars.find(c=>c.id===cur)) cur=chars[0].id;
+}
+function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify({chars,cur,tab})); }catch(e){} }
+const pending = new Map(); let writing = false;
+function queueSave(c){
+  delete c.fresh;
+  c.updated = Date.now(); saveLocal();
+  if(!db) return;
+  clearTimeout(pending.get(c.id)?.t);
+  pending.set(c.id,{t:setTimeout(()=>flush(c.id),900)});
+  setSync("Saving…");
+}
+async function flush(id){
+  const own0=chars.find(x=>x.id===id);
+  if(own0 && me && !mine(own0)){ pending.delete(id); setSync("Read only: not your character"); return; }
+  if(writing){ pending.set(id,{t:setTimeout(()=>flush(id),400)}); return; }
+  const c = chars.find(x=>x.id===id); pending.delete(id);
+  if(!c||!db) return;
+  writing = true;
+  try{ await db.doc("characters/"+id).set(clone(c)); setSync("Synced"); }
+  catch(e){ setSync(e&&e.code==="quota_exceeded"?"Sync storage is full":"Saved on this device only"); }
+  writing = false;
+}
+function setSync(t){ $("#sync").textContent=t; }
+function afterSync(){
+  if(claimed || !me) return;
+  const own = chars.find(c=>c.owner===me.uid);
+  if(own){ claimed=true; if(!mine(C())){ cur=own.id; saveLocal(); renderAll(); } return; }
+  if(isDM){ claimed=true; if(!dmMode){ dmMode=true; saveDm(); renderAll(); } return; }
+  openClaim();
+}
+function openClaim(){
+  const dlg=$("#claimDlg"); if(dlg.open) return;
+  const free=chars.filter(c=>!c.owner && !c.fresh);
+  dlg.innerHTML=`<h3 style="margin-top:0">Which character is yours?</h3>
+    <p class="muted small">Pick your character to claim it. After that only you and the DM can change it.</p>
+    ${free.length?free.map(c=>`<button class="wrow" data-claim="${c.id}">${thumb(c.look.portrait,(c.name||"?").charAt(0),c.look.primary,36)}
+      <span class="grow"><b>${esc(c.name)}</b><span class="snip">${esc(c.race)}, ${esc(c.classes.map(k=>k.name+" "+num(k.level)).join(" / "))}</span></span></button>`).join("")
+      :'<div class="empty">No unclaimed characters. Ask your DM to add yours, or start a new one.</div>'}
+    <div class="toolbar" style="justify-content:flex-end"><button data-claim="new">Start a new character</button></div>`;
+  dlg.showModal();
+}
+$("#claimDlg").addEventListener("click",e=>{
+  const b=e.target.closest("[data-claim]"); if(!b) return;
+  const id=b.dataset.claim;
+  if(id==="new"){ const c=blank(); c.owner=me.uid; c.name=(me.displayName||"New").split(" ")[0]+"'s character";
+    chars.push(c); cur=c.id; claimed=true; $("#claimDlg").close(); queueSave(c); renderAll(); return; }
+  const c=chars.find(x=>x.id===id); if(!c) return;
+  c.owner=me.uid; cur=c.id; claimed=true; $("#claimDlg").close(); queueSave(c); saveLocal(); renderAll();
+  toast(`${c.name} is yours`);
+});
+function onRemote(snap){
+  setTimeout(afterSync,0);
+  if(snap.metadata && snap.metadata.hasPendingWrites) return;
+  let changed=false;
+  snap.docs.forEach(doc=>{
+    if(!doc.exists) return;
+    const r = normalize(clone(doc.data()));
+    if(pending.has(r.id)) return; // the player is mid-edit; their save wins
+    const i = chars.findIndex(c=>c.id===r.id);
+    if(i<0){ chars.push(r); changed=true; return; }
+    if(num(r.updated)<=num(chars[i].updated)) return;
+    if(r.id===cur && !dmMode) announceChanges(chars[i], r);
+    chars[i]=r; changed=true;
+  });
+  if(changed){
+    saveLocal();
+    afterSync();
+    const a=document.activeElement, busy=(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&!a.dataset.dmg)
+      || document.querySelector("dialog[open]") || Date.now()-lastEdit<4000;
+    if(busy){ clearTimeout(onRemote.h); onRemote.h=setTimeout(()=>{ const y=scrollY; renderAll(); scrollTo(0,y); },4000); }
+    else { const y=scrollY; renderAll(); scrollTo(0,y); }
+  }
+}
+const FB = {
+  apiKey: "AIzaSyBTorpmEPWQj36ePqTmqch9gjkvv8Uayp8",
+  authDomain: "bag-of-holding-c4ff9.firebaseapp.com",
+  projectId: "bag-of-holding-c4ff9",
+  storageBucket: "bag-of-holding-c4ff9.firebasestorage.app",
+  messagingSenderId: "616426101496",
+  appId: "1:616426101496:web:007bc09d5aa202584b390d"
+};
+let me=null, isDM=false, appSettings={dm:"",dmEmail:"",emails:[]}, storage=null, claimed=false;
+const mine = c => !!c && (c.owner===(me&&me.uid) || isDM);
+const LS_EMAIL="boh.emailForSignIn";
+function gate(msg,sub,showBtn){
+  $("#gate").style.display="flex"; $("#gateMsg").textContent=msg;
+  $("#gateSub").textContent=sub||""; $("#signIn").hidden=!showBtn; $("#emailWrap").hidden=!showBtn;
+}
+function ungate(){ $("#gate").style.display="none"; }
+async function connectDb(){
+  try{ firebase.initializeApp(FB); }catch(e){ gate("Couldn't start up. Check your connection and reload.","",false); return; }
+  try{ storage = firebase.storage(); }catch(e){ storage=null; }
+  const fs = firebase.firestore();
+  fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+  firebase.auth().onAuthStateChanged(async user=>{
+    me=user;
+    if(!user){ gate("Sign in with the Google account your DM invited.","",true); db=null; return; }
+    gate("Signing in…","",false);
+    try{
+      const snap = await fs.doc("settings/app").get();
+      if(!snap.exists){ // the first person to sign in becomes the DM
+        appSettings={dm:user.uid,dmEmail:user.email||"",emails:[]};
+        await fs.doc("settings/app").set(appSettings);
+      } else appSettings = Object.assign({dm:"",dmEmail:"",emails:[]}, snap.data());
+      isDM = appSettings.dm===user.uid;
+      const allowed = isDM || (appSettings.emails||[]).map(e=>String(e).toLowerCase()).includes(String(user.email||"").toLowerCase());
+      if(!allowed){ gate("You're not on the player list yet.", `Ask your DM to add ${user.email}, then reload.`, false);
+        $("#signIn").hidden=false; $("#signIn").textContent="Use a different account"; db=null; return; }
+    }catch(e){ gate("Couldn't reach the campaign data.", "Check your connection, then reload.", false); return; }
+    db = fs; ungate(); setSync("Synced"); startSync();
+  });
+  $("#signIn").onclick=()=>{
+    const p=new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(p).catch(()=>firebase.auth().signInWithRedirect(p));
+  };
+  setupEmailLink(firebase.auth());
+}
+function setupEmailLink(auth){
+  $("#emailToggle").onclick=()=>{
+    const box=$("#emailBox"); box.hidden=!box.hidden;
+    if(!box.hidden){ const last=localStorage.getItem(LS_EMAIL); if(last) $("#emailInput").value=last; $("#emailInput").focus(); }
+  };
+  const send=async()=>{
+    const em=$("#emailInput").value.trim();
+    if(!em.includes("@")) return toastGate("Enter your email address");
+    $("#emailSend").disabled=true; toastGate("Sending…");
+    try{
+      await auth.sendSignInLinkToEmail(em,{url:location.href.split("#")[0].split("?")[0],handleCodeInApp:true});
+      try{ localStorage.setItem(LS_EMAIL,em); }catch(e){}
+      toastGate(`Link sent to ${em}. Open it on this device. Check spam if it's slow.`);
+    }catch(e){
+      toastGate(e.code==="auth/operation-not-allowed" ? "Email links aren't switched on in Firebase yet."
+        : e.code==="auth/invalid-email" ? "That address doesn't look right."
+        : "Couldn't send the link. Check the address and try again.");
+    }
+    $("#emailSend").disabled=false;
+  };
+  $("#emailSend").onclick=send;
+  $("#emailInput").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); send(); } });
+  if(auth.isSignInWithEmailLink(location.href)){
+    let em=null; try{ em=localStorage.getItem(LS_EMAIL); }catch(e){}
+    if(!em) em=prompt("Type the email address you asked for the link with:");
+    if(em){
+      gate("Signing you in…","",false);
+      auth.signInWithEmailLink(em,location.href)
+        .then(()=>{ try{ localStorage.removeItem(LS_EMAIL); }catch(e){} history.replaceState(null,"",location.pathname); })
+        .catch(()=>gate("That sign-in link didn't work.","Links can only be used once and expire after a while. Ask for a new one.",true));
+    }
+  }
+}
+function toastGate(msg){ $("#gateSub").textContent=msg; }
+function startSync(){
+  if(startSync.done) return; startSync.done=true;
+  db.collection("characters").onSnapshot(onRemote, e=>setSync("Live updates paused"));
+  db.collection("rolls").orderBy("at","desc").limit(40).onSnapshot(onRolls, ()=>{});
+  db.collection("whispers").where("audience","array-contains",me.uid).orderBy("at","desc").limit(150)
+    .onSnapshot(sn=>{ whispers=sn.docs.filter(x=>x.exists).map(x=>x.data()); whispersChanged(); }, ()=>{});
+  db.collection("personas").onSnapshot(sn=>{ personas={}; sn.docs.forEach(x=>{ if(x.exists) personas[x.id]=x.data(); }); if(dmMode) renderAll(); }, ()=>{});
+  db.doc("settings/whispers").onSnapshot(x=>{ if(x.exists) wsettings=Object.assign({dmSees:true},x.data()); if(dmMode) refreshWlog(); }, ()=>{});
+  if(isDM) db.collection("rolls").where("at","<",Date.now()-3*864e5).limit(100).get()
+    .then(sn=>sn.docs.forEach(x=>db.doc("rolls/"+x.id).delete().catch(()=>{}))).catch(()=>{});
+}
+async function oldConnectDb(){
+  if(!window.claude||!window.claude.use) return;
+  try{
+    db = await window.claude.use("db");
+    if(!db) return;
+    const snap = await db.collection("characters").get();
+    const remote = snap.docs.filter(d=>d.exists).map(d=>normalize(clone(d.data())));
+    if(!remote.length){
+      for(const c of chars){ await db.doc("characters/"+c.id).set(clone(c)); }
+    }else{
+      const byId = new Map(remote.map(c=>[c.id,c]));
+      for(const c of chars){ // keep whichever copy is newer
+        const r = byId.get(c.id);
+        if(!r && c.fresh) continue;
+        if(!r || num(c.updated)>num(r.updated)){ byId.set(c.id,c); await db.doc("characters/"+c.id).set(clone(c)); }
+      }
+      chars = [...byId.values()];
+      if(!chars.find(c=>c.id===cur)) cur = chars[0].id;
+      saveLocal(); renderAll();
+    }
+    setSync("Synced");
+    db.collection("characters").onSnapshot(onRemote, ()=>setSync("Live updates paused"));
+    db.collection("rolls").orderBy("at","desc").limit(40).onSnapshot(onRolls, ()=>{});
+    db.collection("whispers").orderBy("at","desc").limit(150).onSnapshot(sn=>{ whispers=sn.docs.filter(x=>x.exists).map(x=>x.data()); whispersChanged(); }, ()=>{});
+    db.collection("personas").onSnapshot(sn=>{ personas={}; sn.docs.forEach(x=>{ if(x.exists) personas[x.id]=x.data(); }); if(dmMode) renderAll(); }, ()=>{});
+    db.doc("settings/whispers").onSnapshot(x=>{ if(x.exists) wsettings=Object.assign({dmSees:true},x.data()); if(dmMode) refreshWlog(); }, ()=>{});
+    db.collection("rolls").where("at","<",Date.now()-3*864e5).limit(100).get()
+      .then(sn=>sn.docs.forEach(x=>db.doc("rolls/"+x.id).delete().catch(()=>{}))).catch(()=>{});
+  }catch(e){ db=null; setSync("Saved on this device"); }
+}
+const C = ()=>chars.find(c=>c.id===cur);
+
+/* ---------- rendering ---------- */
+const TABS = [["sheet","Sheet"],["combat","Combat"],["spells","Spells"],["gear","Gear"],["features","Features"],["notes","Notes"]];
+function renderAll(){
+  document.body.classList.toggle("dm", dmMode);
+  if(!C() && !dmMode){ $("#hero").innerHTML=""; $("#tabs").innerHTML=""; $("#view").innerHTML='<div class="empty" style="margin-top:40px">Waiting for your character…</div>'; return; }
+  if(dmMode){ renderDM(); updateBadge(); return; }
+  const c = C();
+  $("#charPick").innerHTML = chars.map(x=>`<option value="${x.id}" ${x.id===cur?"selected":""}>${esc(x.name||"Unnamed")}</option>`).join("");
+  $("#tabs").innerHTML = TABS.map(([k,n])=>`<button role="tab" aria-selected="${k===tab}" data-tab="${k}">${n}</button>`).join("");
+  const d = compute(c);
+  const cls = c.classes.map(k=>`${esc(k.subclass?k.subclass+" ":"")}${esc(k.name)} ${num(k.level)}`).join(" / ");
+  applyTheme(c);
+  document.body.classList.toggle("hidden-mode", c.conditions.some(x=>x.name==="hidden"));
+  $("#hero").innerHTML = `<div class="hero">${portraitHTML(c)}<div>
+      <input class="name" data-bind="name" value="${esc(c.name)}" aria-label="Character name">
+      <div class="sub">${esc(c.breath.ancestry?c.breath.ancestry+" ":"")}${esc(c.race)}, ${cls}</div></div>
+      <div class="pbbox"><b data-out="pb">${d.pb}</b><span>Proficiency</span></div>${condStrip(c)}</div>`;
+  updateBadge();
+  const R = {sheet:rSheet,combat:rCombat,spells:rSpells,gear:rGear,features:rFeatures,notes:rNotes}[tab];
+  $("#view").innerHTML = R(c,d);
+}
+function field(label,bind,val,type="text",extra=""){
+  return `<label class="f">${label}<input type="${type}" data-bind="${bind}" value="${esc(val)}" ${type==="number"?'data-num inputmode="numeric"':""} ${extra}></label>`;
+}
+function lfield(list,id,key,label,val,type="text",extra=""){
+  return `<label class="f">${label}<input type="${type}" data-list="${list}" data-id="${id}" data-key="${key}" value="${esc(val)}" ${type==="number"?'data-num inputmode="decimal"':""} ${extra}></label>`;
+}
+function lcheck(list,id,key,label,val){
+  return `<label class="row small"><input type="checkbox" data-list="${list}" data-id="${id}" data-key="${key}" ${val?"checked":""}> ${label}</label>`;
+}
+function pips(total,used,act,extra=""){
+  let h=""; for(let i=0;i<total;i++) h+=`<button class="pip ${i<total-used?"":"spent"}" data-act="${act}" data-i="${i}" ${extra} aria-label="${i<total-used?"Available":"Used"}"></button>`;
+  return `<span class="pips">${h}</span>`;
+}
+
+function rSheet(c,d){
+  const comb = AB.map(a=>`<div class="cell">
+    <div class="hex"><div class="hex-in">
+      <span class="ab">${ABN[a]}</span>
+      <button class="mod rb" data-act="roll" data-key="mod:${a}" data-label="${ABN[a]} check" data-out="mod:${a}">${d["mod:"+a]}</button>
+      <input type="number" data-bind="abilities.${a}" data-num value="${esc(c.abilities[a])}" aria-label="${ABN[a]} score" inputmode="numeric">
+    </div></div>
+    <div class="save"><label class="row" style="gap:6px"><input type="checkbox" data-bind="saves.${a}" ${c.saves[a]?"checked":""}> Save</label><button class="rb" style="font-weight:700" data-act="roll" data-key="save:${a}" data-label="${ABN[a]} save" data-out="save:${a}">${d["save:"+a]}</button></div>
+  </div>`).join("");
+  const skills = SKILLS.map(([k,n,a])=>{const v=num(c.skills[k]||0);
+    return `<div class="skill"><button class="tri" data-act="skill" data-k="${k}" data-v="${v}" aria-label="${n}: ${["not proficient","proficient","expertise"][v]}">${["","P","E"][v]}</button>
+    <span class="nm">${n}</span><span class="ab">${a.toUpperCase()}</span><button class="rb" style="font-weight:700;width:40px;text-align:right" data-act="roll" data-key="skill:${k}" data-label="${n}" data-out="skill:${k}">${d["skill:"+k]}</button></div>`}).join("");
+  const classes = c.classes.map(k=>`<div class="panel fields" style="margin-bottom:8px">
+    ${lfield("classes",k.id,"name","Class",k.name)}
+    ${lfield("classes",k.id,"subclass","Subclass",k.subclass)}
+    ${lfield("classes",k.id,"level","Level",k.level,"number",'min="1" max="20"')}
+    <label class="f">Hit die<select data-list="classes" data-id="${k.id}" data-key="hitDie" data-num>${[6,8,10,12].map(n=>`<option value="${n}" ${num(k.hitDie)===n?"selected":""}>d${n}</option>`).join("")}</select></label>
+    <label class="f">Spellcasting<select data-list="classes" data-id="${k.id}" data-key="caster">${[["full","Full caster"],["half","Half caster"],["third","Third caster"],["none","None"]].map(([v,n])=>`<option value="${v}" ${k.caster===v?"selected":""}>${n}</option>`).join("")}</select></label>
+    ${c.classes.length>1?`<button class="danger ghost" data-act="rm" data-list="classes" data-id="${k.id}">Remove class</button>`:""}
+  </div>`).join("");
+  return `
+  <h2>Abilities</h2>
+  <p class="muted small">Type a score and the modifier, saves, skills and spell numbers update. Tick a save to add proficiency.</p>
+  <div class="comb">${comb}</div>
+  ${rSenses(c,d)}
+  <div class="grid2">
+    <section><h2>Skills</h2>
+      <p class="muted small">Tap the circle to cycle: none, proficient (P), expertise (E).</p>
+      <div class="skills">${skills}</div></section>
+    <section><h2>Identity</h2>
+      <div class="fields">${field("Species","race",c.race)}${field("Ancestry","breath.ancestry",c.breath.ancestry)}${field("Background","background",c.background)}${field("Alignment","alignment",c.alignment)}${field("Player","player",c.player)}${field("Experience","xp",c.xp,"number")}</div>
+      <h3>Classes</h3>${classes}
+      <button data-act="add" data-list="classes">Add a class (multiclass)</button>
+    </section>
+  </div>`;
+}
+
+function rSenses(c,d){
+  const on = c.senses.filter(x=>x.active!==false);
+  const chips = on.length ? on.map(x=>`<span class="tag h">${esc(x.type==="Other"?(x.label||"Other"):x.type)}${num(x.range)?" "+num(x.range)+" ft":""}</span>`).join(" ") : `<span class="muted small">Normal sight only</span>`;
+  const senses = c.senses.map(x=>`<div class="panel" style="margin:8px 0"><div class="fields">
+    <label class="f">Sense<select data-list="senses" data-id="${x.id}" data-key="type">${SENSES.map(n=>`<option ${x.type===n?"selected":""}>${n}</option>`).join("")}</select></label>
+    ${x.type==="Other"?lfield("senses",x.id,"label","Name it",x.label||""):""}
+    ${lfield("senses",x.id,"range","Range (ft, blank if none)",x.range,"number")}
+    ${lfield("senses",x.id,"source","From (species, item, spell)",x.source)}
+  </div><div class="row">${lcheck("senses",x.id,"active","Active now",x.active!==false)}<button class="danger ghost" data-act="rm" data-list="senses" data-id="${x.id}">Remove</button></div></div>`).join("");
+  const quirks = c.quirks.map(q=>`<div class="panel" style="margin:8px 0"><div class="fields">
+    ${lfield("quirks",q.id,"text","Quirk",q.text)}
+    ${lfield("quirks",q.id,"source","Where it comes from",q.source)}
+  </div><div class="row">${lcheck("quirks",q.id,"key","Keep front and center",q.key)}<button class="danger ghost" data-act="rm" data-list="quirks" data-id="${q.id}">Remove</button></div></div>`).join("");
+  const t = c.trickster;
+  const keyQ = c.quirks.filter(q=>q.key&&q.text);
+  return `<div class="grid2">
+  <section><h2>Senses</h2>
+    <div class="panel">
+      <div class="row" style="margin-bottom:10px">${chips}</div>
+      <div class="stats">
+        <div class="stat"><b data-out="passive">${d.passive}</b><span>Passive Perception</span></div>
+        <div class="stat"><b data-out="passinv">${d.passinv}</b><span>Passive Investigation</span></div>
+        <div class="stat"><b data-out="passins">${d.passins}</b><span>Passive Insight</span></div>
+      </div>
+    </div>
+    ${senses}
+    <button data-act="add" data-list="senses">Add sense</button>
+    <p class="muted small">Add senses from items or spells too, and untick Active when the effect ends.</p>
+  </section>
+  <section><h2>Personality</h2>
+    <div class="panel">
+      ${t.god||keyQ.length?`<div class="row" style="margin-bottom:10px">${t.god?`<span class="tag h">Influenced by ${esc(t.god)}</span>`:""}${keyQ.map(q=>`<span class="tag">${esc(q.text)}</span>`).join(" ")}</div>`:""}
+      <h3 style="margin-top:0">Trickster god</h3>
+      <div class="fields">
+        <label class="f">Influence<select data-bind="trickster.god"><option value="">None</option>${TRICKSTERS.map(n=>`<option ${t.god===n?"selected":""}>${esc(n)}</option>`).join("")}</select></label>
+        ${field("Since (session or event)","trickster.since",t.since)}
+      </div>
+      ${t.god?`<div style="display:grid;gap:10px;margin-top:10px">
+        <label class="f">How it shows in their personality<textarea data-bind="trickster.trait" style="min-height:70px">${esc(t.trait)}</textarea></label>
+        <label class="f">Boon or effect<textarea data-bind="trickster.boon" style="min-height:60px">${esc(t.boon)}</textarea></label>
+        <label class="f">Roleplay hooks and DM notes<textarea data-bind="trickster.notes" style="min-height:60px">${esc(t.notes)}</textarea></label>
+        <p class="muted small">Add any mechanical effect under Features or Bonuses so the sheet counts it.</p></div>`:""}
+    </div>
+    <h3>Quirks</h3>
+    ${quirks||`<div class="empty">No quirks yet. Add the habits and compulsions that should come up at the table.</div>`}
+    <button data-act="add" data-list="quirks">Add quirk</button>
+  </section></div>`;
+}
+
+function defChips(c){
+  const on = c.defenses.filter(x=>x.active!==false);
+  if(!on.length) return "";
+  return `<div class="row">${on.map(x=>`<span class="tag ${x.kind==="vuln"?"":"h"}">${DKIND[x.kind]}: ${esc(x.type)}${x.nonmagical?" (nonmagical)":""}</span>`).join(" ")}</div>`;
+}
+function rCombat(c,d){
+  const atks = c.attacks.map(a=>`<details class="item"><summary><span class="t">${esc(a.name||"New attack")}</span>
+      <button class="tag h rb" data-act="roll" data-key="atk:${a.id}" data-label="${esc(a.name)} attack" data-out="atk:${a.id}">${d["atk:"+a.id]}</button><button class="tag rb" data-act="roll" data-key="dmg:${a.id}" data-label="${esc(a.name)} damage" data-out="dmg:${a.id}">${esc(d["dmg:"+a.id])}</button></summary>
+    <div class="body"><div class="fields">
+      ${lfield("attacks",a.id,"name","Name",a.name)}
+      <label class="f">Uses<select data-list="attacks" data-id="${a.id}" data-key="ability">${[...AB.map(x=>[x,ABN[x]]),["finesse","Finesse (best of Str/Dex)"],["spell","Spellcasting ability"]].map(([v,n])=>`<option value="${v}" ${a.ability===v?"selected":""}>${n}</option>`).join("")}</select></label>
+      ${lfield("attacks",a.id,"bonus","Extra to-hit (magic, homebrew)",a.bonus,"number")}
+      ${lfield("attacks",a.id,"dmg","Damage dice",a.dmg)}
+      ${lfield("attacks",a.id,"dmgType","Damage type",a.dmgType)}
+      ${lfield("attacks",a.id,"notes","Notes",a.notes)}
+    </div><div class="row">${lcheck("attacks",a.id,"prof","Proficient",a.prof)}${lcheck("attacks",a.id,"addMod","Add modifier to damage",a.addMod)}
+      <button class="danger ghost" data-act="rm" data-list="attacks" data-id="${a.id}">Remove</button></div></div></details>`).join("");
+  const hdN = d.lvl;
+  return `
+  <h2>At a glance</h2>
+  <div class="stats">
+    <div class="stat"><b data-out="ac">${d.ac}</b><span>Armor Class</span></div>
+    <div class="stat" role="button" tabindex="0" data-act="roll" data-key="init" data-label="Initiative"><b data-out="init">${d.init}</b><span>Initiative</span></div>
+    <div class="stat"><b data-out="speed">${d.speed}</b><span>Speed</span></div>
+    ${c.spells.length||c.classes.some(k=>k.caster!=="none")?`<div class="stat"><b data-out="spelldc">${d.spelldc}</b><span>Spell save DC</span></div>
+    <div class="stat" role="button" tabindex="0" data-act="roll" data-key="spellatk" data-label="Spell attack"><b data-out="spellatk">${d.spellatk}</b><span>Spell attack</span></div>`:""}
+    <div class="stat"><b data-out="passive">${d.passive}</b><span>Passive Perception</span></div>
+  </div>
+  <div class="grid2">
+  <section><h2>Hit points</h2>
+    <div class="panel hp">
+      <div class="row" style="align-items:baseline"><span class="hpbig" data-out="hpcur">${d.hpcur}</span><span class="muted">of <span data-out="hpmax">${d.hpmax}</span></span>
+        <span class="tag h" style="margin-left:auto">Temp <span data-out="hptemp">${d.hptemp}</span></span></div>
+      <div class="hpbar"><i style="width:${d.hppct}%" id="hpfill"></i></div>
+      ${defChips(c)}
+      <div style="display:grid;gap:6px">
+        ${dmgRows.map((r,i)=>`<div class="row" style="flex-wrap:nowrap">
+          <input type="number" min="0" inputmode="numeric" placeholder="Amount" data-dmg="${i}" data-f="amt" value="${esc(r.amt)}" style="width:96px;flex:none">
+          <select data-dmg="${i}" data-f="type" aria-label="Damage type">${DTYPES.map(t=>`<option ${r.type===t?"selected":""}>${t}</option>`).join("")}</select>
+          ${dmgRows.length>1?`<button class="ghost" data-act="dmgrow" data-k="rm" data-i="${i}" aria-label="Remove this damage type">✕</button>`:""}
+        </div>`).join("")}
+        <div class="row"><button class="ghost small" data-act="dmgrow" data-k="add">Add another damage type</button>
+          <label class="row small"><input type="checkbox" id="dmgMagic" ${dmgMagic?"checked":""}> Magical attack</label></div>
+        <div class="row"><button class="primary" data-act="hp" data-k="dmg">Take damage</button><button data-act="hp" data-k="heal">Heal</button><button data-act="hp" data-k="temp">Add temp HP</button></div>
+        <p class="muted small" style="margin:0">Heal and temp HP use the first amount.</p>
+      </div>
+      ${c.hpLog.length?`<div><div class="row"><span class="small muted" style="flex:1">Recent changes</span><button class="ghost small" data-act="undohp">Undo last</button></div>
+        <ul class="small" style="margin:4px 0 0;padding-left:18px">${c.hpLog.slice(0,4).map(l=>`<li>${esc(l.text)}</li>`).join("")}</ul></div>`:""}
+      <div class="fields">${field("Max HP (before bonuses)","hp.max",c.hp.max,"number")}${field("Current HP","hp.cur",c.hp.cur,"number")}</div>
+      <div><div class="small muted">Hit dice (${esc(d.hd)}): <b data-out="hdleft">${d.hdleft}</b> left</div>${pips(hdN,Math.min(hdN,num(c.hdUsed)),"hd")}</div>
+      <div class="row small"><span>Death saves</span> <span class="muted">successes</span>${pips(3,3-num(c.death.s),"ds",'data-k="s"')}
+        <span class="muted">failures</span><span class="pips">${[0,1,2].map(i=>`<button class="pip ${i<num(c.death.f)?"bad":"spent"}" data-act="df" data-i="${i}" aria-label="Failure ${i+1}"></button>`).join("")}</span></div>
+    </div>
+    <div class="toolbar"><button data-act="rest" data-k="short">Short rest</button><button class="primary" data-act="rest" data-k="long">Long rest</button></div>
+  </section>
+  <section><h2>Defense and movement</h2>
+    <div class="panel"><div class="fields">
+      ${field("Base AC (armor)","acBase",c.acBase,"number")}
+      ${field("Max Dex bonus (blank = no cap)","acDexCap",c.acDexCap,"number")}
+      ${field("Walking speed","speed",c.speed,"number")}
+      ${field("Extra initiative","initBonus",c.initBonus,"number")}
+      <label class="f">Also add to AC<select data-bind="acAbil2"><option value="">Nothing</option>${AB.map(a=>`<option value="${a}" ${c.acAbil2===a?"selected":""}>${ABN[a]} (unarmored defense)</option>`).join("")}</select></label>
+    </div>
+    <div class="row" style="margin-top:8px"><label class="row small"><input type="checkbox" data-bind="acDex" ${c.acDex?"checked":""}> Add Dex to AC</label>
+      <label class="row small"><input type="checkbox" data-bind="shield" ${c.shield?"checked":""}> Shield (+2)</label></div>
+    <p class="muted small">Leather armor: base 11, no cap. Hide: base 12, cap 2. Unarmored: base 10.</p></div>
+    <h3>Resistances, immunities, vulnerabilities</h3>
+    ${c.defenses.map(x=>`<div class="panel" style="margin:8px 0"><div class="fields">
+      <label class="f">Damage type<select data-list="defenses" data-id="${x.id}" data-key="type">${DTYPES.map(t=>`<option ${x.type===t?"selected":""}>${t}</option>`).join("")}</select></label>
+      <label class="f">Effect<select data-list="defenses" data-id="${x.id}" data-key="kind">${Object.entries(DKIND).map(([k,n])=>`<option value="${k}" ${x.kind===k?"selected":""}>${n}</option>`).join("")}</select></label>
+      ${lfield("defenses",x.id,"source","From (species, item, spell)",x.source)}
+      ${lfield("defenses",x.id,"tag","Tag (links to a feature)",x.tag||"")}
+    </div><div class="row">${lcheck("defenses",x.id,"active","Active now",x.active!==false)}${lcheck("defenses",x.id,"nonmagical","Only against nonmagical attacks",x.nonmagical)}
+      <button class="danger ghost" data-act="rm" data-list="defenses" data-id="${x.id}">Remove</button></div></div>`).join("")||`<div class="empty">None yet. Add species traits, rage, potions or items here.</div>`}
+    <button data-act="add" data-list="defenses">Add resistance or immunity</button>
+    ${c.breath.on?`<h2>Breath weapon</h2><div class="panel">
+      <div class="stats"><div class="stat" role="button" tabindex="0" data-act="roll" data-key="breathdmg" data-label="Breath weapon damage"><b data-out="breathdmg" style="font-size:22px">${esc(d.breathdmg)}</b><span>Damage</span></div>
+      <div class="stat"><b data-out="breathdc" style="font-size:22px">${esc(d.breathdc)}</b><span>Half on success</span></div></div>
+      <div class="fields" style="margin-top:8px">${field("Damage type","breath.dmgType",c.breath.dmgType)}${field("Area","breath.shape",c.breath.shape)}</div>
+      <p class="muted small">Uses are tracked on the Features tab.</p></div>`:""}
+    <label class="row small" style="margin-top:8px"><input type="checkbox" data-bind="breath.on" ${c.breath.on?"checked":""}> Show dragonborn breath weapon</label>
+  </section></div>
+  <h2>Attacks</h2>
+  ${atks||`<div class="empty">No attacks yet. Add a weapon or an attack cantrip.</div>`}
+  <button data-act="add" data-list="attacks">Add attack</button>`;
+}
+
+function rSpells(c,d){
+  const slots = d.slots.map((n,i)=>{const L=i+1;const used=Math.min(n,num(c.slotsUsed[L]));
+    return n?`<div class="row" style="margin:4px 0"><span style="width:44px">${ORD(L)}</span>${pips(n,used,"slot",`data-l="${L}"`)}<span class="small muted">${n-used}/${n}</span></div>`:""}).join("");
+  const only = rSpells.only;
+  const groups = {};
+  c.spells.filter(s=>!only||s.prepared||s.always||num(s.level)===0).forEach(s=>{(groups[num(s.level)]=groups[num(s.level)]||[]).push(s)});
+  const lists = Object.keys(groups).sort((a,b)=>a-b).map(L=>`<h3>${ORD(+L)}</h3>`+groups[L].sort((a,b)=>String(a.name).localeCompare(b.name)).map(s=>`
+    <details class="item"><summary>
+      <input type="checkbox" data-list="spells" data-id="${s.id}" data-key="prepared" ${s.prepared||s.always?"checked":""} ${s.always?"disabled":""} aria-label="Prepared" onclick="event.stopPropagation()">
+      <span class="t">${esc(s.name||"New spell")}</span>
+      ${s.conc?'<span class="tag h">C</span>':""}${s.ritual?'<span class="tag">R</span>':""}
+      ${num(s.level)>0?`<button class="ghost small" data-act="cast" data-id="${s.id}">Cast</button>`:""}
+    </summary><div class="body"><div class="fields">
+      ${lfield("spells",s.id,"name","Name",s.name)}
+      ${lfield("spells",s.id,"level","Level (0 = cantrip)",s.level,"number",'min="0" max="9"')}
+      ${lfield("spells",s.id,"time","Casting time",s.time)}
+      ${lfield("spells",s.id,"range","Range",s.range)}
+      ${lfield("spells",s.id,"dur","Duration",s.dur)}
+      ${lfield("spells",s.id,"comp","Components",s.comp)}
+      ${lfield("spells",s.id,"source","Source (book or homebrew)",s.source)}
+    </div>
+    <label class="f">Description<textarea data-list="spells" data-id="${s.id}" data-key="desc">${esc(s.desc)}</textarea></label>
+    <div class="row">${lcheck("spells",s.id,"conc","Concentration",s.conc)}${lcheck("spells",s.id,"ritual","Ritual",s.ritual)}${lcheck("spells",s.id,"always","Always prepared (subclass)",s.always)}
+    <button class="danger ghost" data-act="rm" data-list="spells" data-id="${s.id}">Remove</button></div></div></details>`).join("")).join("");
+  return `
+  <div class="stats" style="margin-top:16px">
+    <div class="stat"><b data-out="spelldc">${d.spelldc}</b><span>Save DC</span></div>
+    <div class="stat" role="button" tabindex="0" data-act="roll" data-key="spellatk" data-label="Spell attack"><b data-out="spellatk">${d.spellatk}</b><span>Attack</span></div>
+    <div class="stat"><b><span data-out="prepcount">${d.prepcount}</span> / <span data-out="preplimit">${d.preplimit}</span></b><span>Prepared</span></div>
+  </div>
+  <div class="grid2"><section><h2>Spell slots</h2><div class="panel">${slots||'<p class="muted">No slots at this level.</p>'}
+    <p class="muted small">Tap a hexagon to spend or restore a slot. Long rest refills them all.</p></div></section>
+  <section><h2>Spellcasting setup</h2><div class="panel"><div class="fields">
+    <label class="f">Ability<select data-bind="spellAbility">${AB.map(a=>`<option value="${a}" ${c.spellAbility===a?"selected":""}>${ABN[a]}</option>`).join("")}</select></label>
+    ${field("Prepared limit (blank = auto)","prepOverride",c.prepOverride,"text",'inputmode="numeric"')}
+    ${field("Slot override, e.g. 4 3 2","slotOverride",c.slotOverride)}
+  </div><label class="row small" style="margin-top:8px"><input type="checkbox" data-bind="pactShort" ${c.pactShort?"checked":""}> Slots refill on a short rest (pact magic)</label>
+  <p class="muted small">Leave overrides blank to use the standard table. Use them for homebrew or house rules.</p></div></section></div>
+  <h2>Spells</h2>
+  <div class="toolbar"><button class="primary" data-act="add" data-list="spells">Add spell</button>
+    <label class="row small"><input type="checkbox" data-act="onlyprep" ${only?"checked":""}> Show prepared only</label></div>
+  ${lists||`<div class="empty">No spells yet. Add one and type in its details from any book or homebrew.</div>`}`;
+}
+
+function rGear(c,d){
+  const items = c.inventory.map(i=>`<details class="item"><summary><span class="t">${esc(i.name||"New item")}</span>
+    ${num(i.qty)!==1?`<span class="tag">×${esc(i.qty)}</span>`:""}${i.equipped?'<span class="tag">Equipped</span>':""}${i.attuned?'<span class="tag h">Attuned</span>':""}</summary>
+    <div class="body"><div class="fields">
+      ${lfield("inventory",i.id,"name","Name",i.name)}${lfield("inventory",i.id,"qty","Quantity",i.qty,"number")}
+      ${lfield("inventory",i.id,"weight","Weight each (lb)",i.weight,"number",'step="0.1"')}
+    </div><label class="f">Notes<textarea data-list="inventory" data-id="${i.id}" data-key="notes">${esc(i.notes)}</textarea></label>
+    <div class="row">${lcheck("inventory",i.id,"equipped","Equipped",i.equipped)}${lcheck("inventory",i.id,"attuned","Attuned",i.attuned)}
+    <button class="danger ghost" data-act="rm" data-list="inventory" data-id="${i.id}">Remove</button></div>
+    <p class="muted small">If this item grants a bonus, add it under Features, then Bonuses, so the sheet counts it.</p></div></details>`).join("");
+  return `
+  <h2>Coins</h2>
+  <div class="panel fields">${["cp","sp","ep","gp","pp"].map(k=>field(k.toUpperCase(),"coins."+k,c.coins[k],"number")).join("")}</div>
+  <h2>Inventory</h2>
+  <p class="muted small">Carrying <b data-out="weight">${d.weight}</b> of <b data-out="carry">${d.carry}</b> lb. Attuned items: <b data-out="attuned">${d.attuned}</b> of 3.</p>
+  ${items||`<div class="empty">Nothing carried yet.</div>`}
+  <button class="primary" data-act="add" data-list="inventory">Add item</button>`;
+}
+
+function rFeatures(c,d){
+  const feats = c.features.map(f=>{const mx=d["fmax:"+f.id];const used=Math.min(num(f.used),mx||0);
+    return `<details class="item"><summary><span class="t">${esc(f.name||"New feature")}</span>
+    ${mx?(mx<=10?pips(mx,used,"fuse",`data-id="${f.id}"`):`<span class="tag h">${mx-used}/${mx}</span>`):""}
+    ${f.recharge!=="none"&&mx?`<span class="tag">${f.recharge==="short"?"Short rest":"Long rest"}</span>`:""}
+    ${f.tag?`<button class="${tagOn(c,f.tag)?"":"primary"} small" data-act="ftoggle" data-id="${f.id}">${tagOn(c,f.tag)?"End":"Activate"}</button>`:""}</summary>
+    <div class="body"><div class="fields">
+      ${lfield("features",f.id,"name","Name",f.name)}${lfield("features",f.id,"source","Source",f.source)}
+      ${lfield("features",f.id,"max","Max uses (number, PB, WIS, LEVEL…)",f.max)}
+      ${lfield("features",f.id,"used","Used",f.used,"number",'min="0"')}
+      ${lfield("features",f.id,"tag","Switches on effects tagged",f.tag||"")}
+      <label class="f">Recharges on<select data-list="features" data-id="${f.id}" data-key="recharge">${[["long","Long rest"],["short","Short or long rest"],["none","Never / manual"]].map(([v,n])=>`<option value="${v}" ${f.recharge===v?"selected":""}>${n}</option>`).join("")}</select></label>
+    </div><label class="f">Description<textarea data-list="features" data-id="${f.id}" data-key="desc">${esc(f.desc)}</textarea></label>
+    <div class="row"><button class="danger ghost" data-act="rm" data-list="features" data-id="${f.id}">Remove</button></div></div></details>`}).join("");
+  const bons = c.bonuses.map(b=>`<div class="panel" style="margin:8px 0"><div class="fields">
+    ${lfield("bonuses",b.id,"label","What grants it",b.label)}
+    <label class="f">Applies to<select data-list="bonuses" data-id="${b.id}" data-key="target">${TARGETS.map(([v,n])=>`<option value="${v}" ${b.target===v?"selected":""}>${n}</option>`).join("")}</select></label>
+    ${lfield("bonuses",b.id,"value","Amount (can be negative)",b.value,"number")}
+    ${lfield("bonuses",b.id,"tag","Tag (links to a feature)",b.tag||"")}
+  </div><div class="row">${lcheck("bonuses",b.id,"active","Active",b.active!==false)}<button class="danger ghost" data-act="rm" data-list="bonuses" data-id="${b.id}">Remove</button></div></div>`).join("");
+  return `
+  <h2>Features and traits</h2>
+  <p class="muted small">Class, subclass, species, feats and homebrew all go here. Max uses can be a formula like PB, WIS, 1+WIS or LEVEL*5.</p>
+  ${feats||`<div class="empty">No features yet.</div>`}
+  <button class="primary" data-act="add" data-list="features">Add feature</button>
+  <h2>Bonuses</h2>
+  <p class="muted small">For magic items, blessings, feats or homebrew that change a number. Untick Active to switch one off without deleting it.</p>
+  ${bons||`<div class="empty">No bonuses. Add a Ring of Protection, a homebrew boon, or anything else that changes a number.</div>`}
+  <button data-act="add" data-list="bonuses">Add bonus</button>`;
+}
+
+function rLook(c){
+  const L=c.look, pt=L.portrait;
+  return `<h2 id="look">Look and theme</h2>
+  <div class="grid2">
+  <section class="panel">
+    <h3 style="margin-top:0">Portrait</h3>
+    <p class="muted small">A picture, animated GIF, or short MP4 or WebM clip. Animations loop silently.</p>
+    <div class="row">
+      <label class="primary" style="display:inline-flex;align-items:center;gap:6px;background:var(--emerald);color:var(--emerald-ink);border-radius:6px;padding:7px 12px;font-weight:700;cursor:pointer">
+        ${portraitSrc(pt)?"Replace portrait":"Add portrait"}<input type="file" id="portraitFile" accept="image/*,video/mp4,video/webm" style="position:absolute;width:1px;height:1px;opacity:0"></label>
+      ${portraitSrc(pt)?`<button class="danger ghost" data-act="rmportrait">Remove portrait</button>`:""}
+    </div>
+    ${portraitSrc(pt)?`<label class="f" style="margin-top:10px">Frame the face (move up or down)<input type="range" min="0" max="100" data-bind="look.portrait.pos" data-num value="${num(pt.pos)}"></label>`:""}
+  </section>
+  <section class="panel">
+    <h3 style="margin-top:0">Theme</h3>
+    <div class="swatches" data-live="${esc(L.primary)}|${esc(L.accent)}">${THEMES.map(([k,n,p,a])=>`<button class="swatch" data-act="theme" data-k="${k}" aria-pressed="${L.theme===k}"><i style="background:linear-gradient(135deg,${p} 55%,${a} 55%)"></i>${n}</button>`).join("")}</div>
+    <h3>Main color</h3>
+    <div class="cgrid"><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#1E6B4B" style="background:#1E6B4B" aria-label="#1E6B4B"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#3FA34D" style="background:#3FA34D" aria-label="#3FA34D"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#4E5B31" style="background:#4E5B31" aria-label="#4E5B31"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#2F6F8F" style="background:#2F6F8F" aria-label="#2F6F8F"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#1F4E8C" style="background:#1F4E8C" aria-label="#1F4E8C"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#5B3A8C" style="background:#5B3A8C" aria-label="#5B3A8C"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#9B2335" style="background:#9B2335" aria-label="#9B2335"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#B7472A" style="background:#B7472A" aria-label="#B7472A"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#8A5A12" style="background:#8A5A12" aria-label="#8A5A12"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#E2A93A" style="background:#E2A93A" aria-label="#E2A93A"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#C75B8A" style="background:#C75B8A" aria-label="#C75B8A"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#3A3F47" style="background:#3A3F47" aria-label="#3A3F47"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#6D4C41" style="background:#6D4C41" aria-label="#6D4C41"></button><button class="cbtn" data-act="pickcolor" data-slot="primary" data-c="#111418" style="background:#111418" aria-label="#111418"></button></div>
+    <label class="row small">Or type a color code <input class="hexin" data-bind="look.primary" value="${esc(L.primary)}" spellcheck="false" autocomplete="off" aria-label="Main color code"></label>
+    <h3>Accent color</h3>
+    <div class="cgrid"><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#1E6B4B" style="background:#1E6B4B" aria-label="#1E6B4B"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#3FA34D" style="background:#3FA34D" aria-label="#3FA34D"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#4E5B31" style="background:#4E5B31" aria-label="#4E5B31"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#2F6F8F" style="background:#2F6F8F" aria-label="#2F6F8F"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#1F4E8C" style="background:#1F4E8C" aria-label="#1F4E8C"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#5B3A8C" style="background:#5B3A8C" aria-label="#5B3A8C"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#9B2335" style="background:#9B2335" aria-label="#9B2335"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#B7472A" style="background:#B7472A" aria-label="#B7472A"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#8A5A12" style="background:#8A5A12" aria-label="#8A5A12"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#E2A93A" style="background:#E2A93A" aria-label="#E2A93A"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#C75B8A" style="background:#C75B8A" aria-label="#C75B8A"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#3A3F47" style="background:#3A3F47" aria-label="#3A3F47"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#6D4C41" style="background:#6D4C41" aria-label="#6D4C41"></button><button class="cbtn" data-act="pickcolor" data-slot="accent" data-c="#111418" style="background:#111418" aria-label="#111418"></button></div>
+    <label class="row small">Or type a color code <input class="hexin" data-bind="look.accent" value="${esc(L.accent)}" spellcheck="false" autocomplete="off" aria-label="Accent color code"></label>
+    <div class="fields" style="margin-top:10px">
+      <label class="f">Name lettering<select data-bind="look.font">${FONTS.map(([f,n])=>`<option value="${f}" ${L.font===f?"selected":""}>${n}</option>`).join("")}</select></label>
+    </div>
+    <p class="muted small">Pick a preset, then fine-tune the colors if you like. Each character keeps its own theme.</p>
+  </section></div>`;
+}
+
+function rNotes(c){
+  const ta=(l,k,v,h=100)=>`<label class="f">${l}<textarea data-bind="notes.${k}" style="min-height:${h}px">${esc(v)}</textarea></label>`;
+  return rLook(c)+`<h2>Notes</h2><div class="grid2">
+    <div style="display:grid;gap:12px">${ta("Session notes","session",c.notes.session,220)}${ta("Personality, ideals, bonds, flaws","traits",c.notes.traits)}</div>
+    <div style="display:grid;gap:12px">${ta("Backstory","backstory",c.notes.backstory,160)}${ta("Languages","languages",c.notes.languages,60)}${ta("Other proficiencies","profs",c.notes.profs,80)}</div></div>`;
+}
+
+/* ---------- live updates ---------- */
+function refreshOut(){
+  const d = compute(C());
+  document.querySelectorAll("[data-out]").forEach(el=>{const v=d[el.dataset.out]; if(v!==undefined&&v!==null) el.textContent=v;});
+  const f=$("#hpfill"); if(f) f.style.width=d.hppct+"%";
+}
+function setPath(o,path,v){const p=path.split(".");let x=o;for(let i=0;i<p.length-1;i++){x[p[i]]=x[p[i]]||{};x=x[p[i]];}x[p[p.length-1]]=v;}
+function readVal(el){ if(el.type==="checkbox") return el.checked; if(el.hasAttribute("data-num")) return el.value===""?"":num(el.value); return el.value; }
+
+let lastEdit=0;
+document.addEventListener("input",e=>{ lastEdit=Date.now(); },true);
+document.addEventListener("focusin",e=>{ if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) lastEdit=Date.now(); });
+document.addEventListener("input",e=>{
+  const el=e.target, c=C(); if(!c) return;
+  if(el.dataset.dmg!==undefined){ dmgRows[+el.dataset.dmg][el.dataset.f]=el.value; return; }
+  if(el.id==="dmgMagic"){ dmgMagic=el.checked; return; }
+  if(el.dataset.bind){ setPath(c,el.dataset.bind,readVal(el)); }
+  else if(el.dataset.list){ const it=c[el.dataset.list].find(x=>x.id===el.dataset.id); if(!it) return; it[el.dataset.key]=readVal(el); }
+  else return;
+  queueSave(c); refreshOut();
+  if((el.dataset.bind||"").startsWith("look.")){
+    if(el.classList.contains("hexin")){
+      const v=el.value.trim().replace(/^#?/,"#");
+      if(!/^#[0-9a-f]{6}$/i.test(v)) return;
+      setPath(c,el.dataset.bind,v); c.look.theme="custom";
+      document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
+    }
+    if(el.type==="color"){ c.look.theme="custom"; document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false")); }
+    applyTheme(c);
+    document.querySelectorAll(".portrait img,.portrait video").forEach(m=>m.style.objectPosition=`50% ${num(c.look.portrait.pos)}%`);
+  }
+  if(el.dataset.bind==="name"){ const o=$("#charPick").querySelector(`option[value="${c.id}"]`); if(o) o.textContent=c.name||"Unnamed"; }
+});
+document.addEventListener("change",e=>{
+  const el=e.target;
+  if(el.type==="color" && (el.dataset.bind||"").startsWith("look.")){
+    const c=C(); if(!c) return;
+    setPath(c,el.dataset.bind,el.value); c.look.theme="custom";
+    document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
+    applyTheme(c); queueSave(c); return;
+  }
+  if(el.id==="charPick"){ dmgRows=[{amt:"",type:"slashing"}]; cur=el.value; saveLocal(); renderAll(); checkWhispers(); return; }
+  if(el.dataset.act==="onlyprep"){ rSpells.only=el.checked; renderAll(); return; }
+  if(el.dataset.dmg!==undefined||el.id==="dmgMagic") return;
+  if(el.dataset.pref){ prefs[el.dataset.pref]=el.checked; try{localStorage.setItem(LS_PREFS,JSON.stringify(prefs))}catch(x){} if(el.checked&&el.dataset.pref==="sound") audio(); return; }
+  if(el.dataset.personaimg){ const f=el.files[0]; const id=el.dataset.personaimg; el.value=""; if(f) fileToMedia(f,240).then(m=>{ savePersona(id,{img:m}); toast("Image saved"); }).catch(msg=>toast(String(msg))); return; }
+  if(el.dataset.personacolor){ savePersona(el.dataset.personacolor,{color:el.value}); return; }
+  if(el.id==="dmSees"){ saveWSettings({dmSees:el.checked}); return; }
+  if(el.id==="portraitFile"){ const f=el.files[0]; el.value=""; if(f) setPortrait(f); return; }
+  if(el.id==="partyFile"){ const f=el.files[0]; el.value=""; if(f) f.text().then(importParty); return; }
+  if(el.id==="importFile"){ const f=el.files[0]; if(f) f.text().then(importText); el.value=""; return; }
+  // re-render where structure or labels depend on the value
+  if(el.type==="checkbox"||el.tagName==="SELECT"||["level","name","qty","text","range","label"].includes(el.dataset.key)||/^(breath|classes)/.test(el.dataset.bind||"")){
+    const open=[...document.querySelectorAll("details[open]")].map(x=>x.querySelector("[data-id]")?.dataset.id);
+    const y=scrollY; renderAll(); scrollTo(0,y);
+    open.forEach(id=>{ if(!id) return; const n=document.querySelector(`[data-id="${id}"]`); n?.closest("details")?.setAttribute("open",""); });
+  }
+});
+
+document.addEventListener("keydown",e=>{ const b=e.target.closest?.('[role=button][data-act]'); if(b&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); b.click(); } });
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act],[data-tab]"); if(!b) return;
+  if(b.closest("#diceDlg")) return;
+  const c=C();
+  if(b.dataset.tab){ tab=b.dataset.tab; saveLocal(); renderAll(); scrollTo(0,0); return; }
+  const a=b.dataset.act, i=num(b.dataset.i);
+  const keepOpen=()=>{ const id=b.closest("details")?.querySelector("[data-id]")?.dataset.id; const y=scrollY; renderAll(); scrollTo(0,y);
+    if(id){ const n=document.querySelector(`[data-id="${id}"]`); n?.closest("details")?.setAttribute("open",""); } };
+  const toggle=(total,used)=> i<total-used ? Math.min(total,used+1) : Math.max(0,used-1); // tap a full pip to spend one, an empty one to restore one
+  switch(a){
+    case "gotolook": $("#menu").close(); tab="notes"; saveLocal(); renderAll(); $("#look")?.scrollIntoView({block:"start"}); return;
+    case "pickcolor": { const slot=b.dataset.slot; c.look[slot]=b.dataset.c; c.look.theme="custom";
+      const f=document.querySelector(`input[data-bind="look.${slot}"]`); if(f) f.value=b.dataset.c;
+      document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
+      document.querySelectorAll(`.cbtn[data-slot="${slot}"]`).forEach(x=>x.setAttribute("aria-pressed", x.dataset.c===b.dataset.c));
+      applyTheme(c); queueSave(c); return; }
+    case "theme": { const t=THEMES.find(x=>x[0]===b.dataset.k); c.look.theme=t[0]; c.look.primary=t[2]; c.look.accent=t[3];
+      const pi=document.querySelector('input[data-bind="look.primary"]'), ai=document.querySelector('input[data-bind="look.accent"]');
+      if(pi) pi.value=t[2]; if(ai) ai.value=t[3];
+      document.querySelectorAll(".cbtn").forEach(x=>x.setAttribute("aria-pressed","false"));
+      document.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed", x.dataset.k===t[0]));
+      applyTheme(c); queueSave(c); return; }
+    case "rmportrait": if(!confirm("Remove this portrait?")) return; c.look.portrait={kind:"",asset:"",url:"",data:"",pos:30}; break;
+    case "roll": e.preventDefault(); rollKey(c,b.dataset.key,b.dataset.label); return;
+    case "dice": openDice(); return;
+    case "inbox": openInbox(); return;
+    case "addEmail": { const v=$("#newEmail").value.trim().toLowerCase(); if(!v||!v.includes("@")) return toast("Enter an email address");
+      if((appSettings.emails||[]).includes(v)) return toast("Already on the list");
+      $("#newEmail").value=""; saveAccess([...(appSettings.emails||[]),v]); return; }
+    case "rmEmail": saveAccess((appSettings.emails||[]).filter(x=>x!==b.dataset.k)); return;
+    case "signout": firebase.auth().signOut().then(()=>location.reload()); return;
+    case "dmwhisper": openCompose(b.dataset.char); return;
+    case "personas": openPersonas(); return;
+    case "dmenter": if(!isDM) return toast("Only the DM can open this screen"); dmMode=true; saveDm(); $("#menu").close(); renderAll(); scrollTo(0,0); return;
+    case "dmexit": dmMode=false; saveDm(); renderAll(); scrollTo(0,0); return;
+    case "dmopen": dmMode=false; saveDm(); cur=b.dataset.char; tab="sheet"; saveLocal(); renderAll(); scrollTo(0,0); return;
+    case "dmhide": dmHidden.add(b.dataset.char); saveDm(); renderAll(); return;
+    case "dmshowall": dmHidden.clear(); saveDm(); renderAll(); return;
+    case "dmsense": senseFilter = senseFilter===b.dataset.k ? "" : b.dataset.k; renderAll(); return;
+    case "dmhp": openDmHp(b.dataset.char); return;
+    case "dmcond": openCondPicker(b.dataset.char); return;
+    case "addcond": openCondPicker(); return;
+    case "hide": openHide(); return;
+    case "ftoggle": { e.preventDefault(); const f=c.features.find(x=>x.id===b.dataset.id); if(!f) return;
+      const tagged=[...c.bonuses,...c.defenses].filter(x=>x.tag===f.tag);
+      if(!tagged.length){ toast(`Nothing is tagged "${f.tag}" yet`); return; }
+      if(tagOn(c,f.tag)){ tagged.forEach(x=>x.active=false); queueSave(c); keepOpen(); notify("clear",`${c.name} is no longer ${f.tag}`,""); return; }
+      const mx=compute(c)["fmax:"+f.id];
+      if(mx && num(f.used)>=mx){ toast(`No uses of ${f.name} left`); return; }
+      if(mx) f.used=num(f.used)+1;
+      tagged.forEach(x=>x.active=true); queueSave(c); keepOpen();
+      notify("condition",`${c.name} is ${f.tag}!`,`${f.name}. ${tagged.map(x=>x.label||(x.kind?DKIND[x.kind]+" to "+x.type:"")).filter(Boolean).join(", ")}`,"#C0392B");
+      return; }
+    case "condinfo": openCondInfo(b.dataset.id, b.dataset.char); return;
+    case "testalert": $("#menu").close(); notify("damage","Test: 6 damage","3 psychic (7 resisted) + 3 fire"); setTimeout(()=>notify("condition","Test: poisoned",CONDS.poisoned[1],CONDS.poisoned[0]),1500); return;
+    case "skill": c.skills[b.dataset.k]=(num(c.skills[b.dataset.k])+1)%3; break;
+    case "slot": { e.preventDefault(); const L=b.dataset.l, n=compute(c).slots[L-1]; c.slotsUsed[L]=toggle(n,Math.min(n,num(c.slotsUsed[L]))); break; }
+    case "hd": { const n=compute(c).lvl; c.hdUsed=toggle(n,Math.min(n,num(c.hdUsed))); break; }
+    case "ds": { c.death.s=3-toggle(3,3-num(c.death.s)); break; }
+    case "df": c.death.f = i<num(c.death.f)?i:i+1; break;
+    case "fuse": { e.preventDefault(); const f=c.features.find(x=>x.id===b.dataset.id); const mx=compute(c)["fmax:"+f.id]; f.used=toggle(mx,Math.min(mx,num(f.used))); break; }
+    case "cast": { e.preventDefault(); const s=c.spells.find(x=>x.id===b.dataset.id); const sl=compute(c).slots; let L=num(s.level);
+      while(L<=sl.length && num(c.slotsUsed[L])>=sl[L-1]) L++;
+      if(L>sl.length){ toast("No slots left for "+s.name); return; }
+      c.slotsUsed[L]=num(c.slotsUsed[L])+1; toast(`Cast ${s.name} with a ${ORD(L)}-level slot`); break; }
+    case "dmgrow": if(b.dataset.k==="add") dmgRows.push({amt:"",type:"fire"}); else dmgRows.splice(i,1); keepOpen(); return;
+    case "undohp": { const l=c.hpLog.shift(); if(!l) return; c.hp.cur=l.before.cur; c.hp.temp=l.before.temp; c.death=l.before.death; if(l.before.conds) c.conditions=l.before.conds; toast("Undone"); break; }
+    case "hp": { const mx=compute(c).hpmax; const before={cur:num(c.hp.cur),temp:num(c.hp.temp),death:clone(c.death),conds:clone(c.conditions)};
+      const prev=clone(c);
+      if(b.dataset.k==="dmg"){ const msg=applyDamage(c,dmgRows,dmgMagic,mx); if(!msg) return toast("Enter a damage amount");
+        dmgRows=[{amt:"",type:dmgRows[0].type}]; queueSave(c); keepOpen(); announceChanges(prev,c); return; }
+      const amt=Math.abs(Math.floor(num(dmgRows[0].amt))); if(!amt) return toast("Enter an amount");
+      if(b.dataset.k==="heal"){ c.hp.cur=Math.min(mx,before.cur+amt); if(before.cur===0){ c.death={s:0,f:0}; c.conditions=c.conditions.filter(x=>!(x.name==="unconscious"&&/0 HP/.test(x.source))); } logHp(c,`Healed ${c.hp.cur-before.cur} (rolled ${amt})`,before); }
+      else if(amt>before.temp){ c.hp.temp=amt; logHp(c,`Temp HP set to ${amt}`+(before.temp?` (replaced ${before.temp})`:""),before); }
+      else { toast(`Temp HP doesn't stack. Kept the current ${before.temp}.`); return; }
+      dmgRows=[{amt:"",type:dmgRows[0].type}]; queueSave(c); keepOpen(); if(b.dataset.k==="heal") announceChanges(prev,c); return; }
+    case "rest": {
+      if(b.dataset.k==="long"){ const mx=compute(c).hpmax; c.hp.cur=mx; c.hp.temp=0; c.slotsUsed={}; c.death={s:0,f:0};
+        c.hdUsed=Math.max(0,num(c.hdUsed)-Math.max(1,Math.floor(compute(c).lvl/2)));
+        c.features.forEach(f=>{ if(f.recharge!=="none") f.used=0; }); toast("Long rest taken"); }
+      else { c.features.forEach(f=>{ if(f.recharge==="short") f.used=0; }); if(c.pactShort) c.slotsUsed={}; toast("Short rest: short-rest features restored"); }
+      break; }
+    case "add": { const L=b.dataset.list; const id=uid(); const t={
+        spells:{id,name:"",level:rSpells.lastLevel||0,prepared:true,always:false,conc:false,ritual:false,time:"1 action",range:"",dur:"",comp:"",source:"",desc:""},
+        attacks:{id,name:"",ability:"str",prof:true,bonus:0,dmg:"1d6",addMod:true,dmgType:"",notes:""},
+        features:{id,name:"",source:"",max:"",used:0,recharge:"long",desc:""},
+        bonuses:{id,label:"",target:"ac",value:1,active:true},
+        inventory:{id,name:"",qty:1,weight:0,equipped:false,attuned:false,notes:""},
+        classes:{id,name:"",subclass:"",level:1,hitDie:8,caster:"none"},
+        senses:{id,type:"Darkvision",label:"",range:60,source:"",active:true},
+        quirks:{id,text:"",source:"",key:true},
+        defenses:{id,type:"fire",kind:"resist",nonmagical:false,source:"",active:true}}[L];
+      c[L].push(t); queueSave(c); renderAll();
+      const n=document.querySelector(`[data-id="${id}"]`); const det=n?.closest("details"); if(det){det.open=true;} n?.scrollIntoView({block:"center"});
+      const inp=det?det.querySelector("input[type=text]"):n?.closest(".panel")?.querySelector("input"); inp?.focus();
+      return; }
+    case "rm": { const L=b.dataset.list; const it=c[L].find(x=>x.id===b.dataset.id);
+      if(!confirm(`Remove ${it&&(it.name||it.label)||"this entry"}?`)) return;
+      c[L]=c[L].filter(x=>x.id!==b.dataset.id); break; }
+    default: return menuAct(a);
+  }
+  queueSave(c); keepOpen();
+});
+
+/* ---------- dice ---------- */
+let rollMode="normal", rollCrit=false, rolls=[], localRolls=[], diceExpr="";
+const die = n=>1+Math.floor(Math.random()*n);
+function parseDice(expr){
+  const s=String(expr).toLowerCase().replace(/−/g,"-").replace(/\s+/g,"");
+  if(!s) return null;
+  const re=/([+-]?)(\d*)d(\d+)|([+-]?)(\d+)/g; let m, used=0; const terms=[];
+  while((m=re.exec(s))){
+    if(m.index!==used) return null; used=re.lastIndex;
+    if(m[3]!==undefined){ const n=+(m[2]||1), sd=+m[3]; if(!n||!sd||n>100||sd>1000) return null; terms.push({sign:m[1]==="-"?-1:1,n,sides:sd}); }
+    else terms.push({sign:m[4]==="-"?-1:1,flat:+m[5]});
+  }
+  return used===s.length && terms.length ? terms : null;
+}
+function rollDice(terms,mode,crit){
+  const dice=terms.filter(t=>t.sides), single20 = dice.length===1 && dice[0].sides===20 && dice[0].n===1;
+  let total=0, nat=null; const parts=[];
+  terms.forEach(t=>{
+    if(t.flat!==undefined){ total+=t.sign*t.flat; parts.push({sign:t.sign,flat:t.flat}); return; }
+    if(single20 && mode!=="normal"){
+      const a=die(20), b=die(20), keep=mode==="adv"?Math.max(a,b):Math.min(a,b);
+      nat=keep; total+=t.sign*keep; parts.push({sign:t.sign,sides:20,rolls:[a,b],kept:keep}); return;
+    }
+    const n=crit?t.n*2:t.n, r=[]; for(let i=0;i<n;i++) r.push(die(t.sides));
+    if(single20) nat=r[0];
+    total+=t.sign*r.reduce((x,y)=>x+y,0); parts.push({sign:t.sign,sides:t.sides,rolls:r});
+  });
+  return {total,parts,nat};
+}
+function breakdown(res){
+  return res.parts.map((p,i)=>{
+    const sg = p.sign<0 ? "− " : (i ? "+ " : "");
+    if(p.flat!==undefined) return sg+p.flat;
+    return sg+`${p.rolls.length>1&&p.kept===undefined?p.rolls.length:""}d${p.sides} (${p.rolls.join(", ")}${p.kept!==undefined?` → ${p.kept}`:""})`;
+  }).join(" ");
+}
+function rollKey(c,key,label){
+  const d=compute(c); let expr, kind="check";
+  if(key.startsWith("dmg:")||key==="breathdmg"){ expr=String(d[key]).replace(/[a-z]{2,}/gi,""); kind="damage"; }
+  else expr="1d20"+d[key];
+  doRoll(c,label,expr,kind);
+}
+function doRoll(c,label,expr,kind){
+  const terms=parseDice(expr); if(!terms) return toast("That isn't a dice expression, e.g. 2d6+3");
+  const mode = kind==="damage" ? "normal" : rollMode, crit = kind!=="check" && rollCrit;
+  const res=rollDice(terms,mode,crit);
+  const e={char:c?c.id:"", name:c?c.name:"DM", color:c?c.look.primary:"#555", label:label||expr, expr:String(expr).replace(/\s+/g,""),
+    total:res.total, detail:breakdown(res), mode, crit, nat:res.nat, at:Date.now(), uid:me?me.uid:""};
+  rollMode="normal"; rollCrit=false; fabMode();
+  showRoll(e);
+  if(db) db.collection("rolls").add(e).catch(()=>{ localRolls.unshift(e); });
+  else { localRolls.unshift(e); localRolls=localRolls.slice(0,40); if(dmMode) refreshFeed(); }
+  return e;
+}
+function showRoll(e){
+  const card=$("#rollCard");
+  card.className = e.nat===20?"n20":e.nat===1?"n1":"";
+  card.style.setProperty("--pc", e.color);
+  card.innerHTML=`<div class="small muted">${esc(e.name)}: ${esc(e.label)}${e.mode!=="normal"?` (${e.mode==="adv"?"advantage":"disadvantage"})`:""}${e.crit?" (critical)":""}</div>
+    <div class="big">${e.total}</div><div class="small muted">${esc(e.detail)}</div>
+    ${e.nat===20?'<div style="font-weight:700;color:#B97A0B">Natural 20!</div>':e.nat===1?'<div style="font-weight:700;color:var(--danger)">Natural 1</div>':""}`;
+  void card.offsetWidth; card.classList.add("on");
+  const big=card.querySelector(".big");
+  if(prefs.anim && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    let t=0; const lo=Math.min(1,e.total), hi=Math.max(20,e.total);
+    const spin=setInterval(()=>{ big.textContent=lo+Math.floor(Math.random()*(hi-lo+1)); if(++t>11){ clearInterval(spin); big.textContent=e.total; } },45);
+  }
+  if(prefs.sound){ const ctx=audio(); if(ctx) try{ rattle(ctx); if(e.nat===20) tone(ctx,{f0:880,f1:1760,t0:.5,dur:.4,vol:.15}); }catch(x){} }
+  if(prefs.vibrate && navigator.vibrate) navigator.vibrate([15,30,15,30,25]);
+  clearTimeout(showRoll.h); showRoll.h=setTimeout(()=>card.classList.remove("on"),4500);
+}
+$("#rollCard").onclick=()=>$("#rollCard").classList.remove("on");
+function rattle(ctx){
+  for(let k=0;k<6;k++){
+    const t0=k*.06+Math.random()*.03, len=Math.floor(ctx.sampleRate*.03), buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+    const src=ctx.createBufferSource(), hp=ctx.createBiquadFilter(), g=ctx.createGain();
+    hp.type="bandpass"; hp.frequency.value=2200+Math.random()*1800; g.gain.value=.5-k*.06;
+    src.buffer=buf; src.connect(hp).connect(g).connect(ctx.destination); src.start(ctx.currentTime+t0);
+  }
+}
+function fabMode(){ $("#fabMode").textContent = rollMode==="adv"?"ADV":rollMode==="dis"?"DIS":rollCrit?"CRIT":""; }
+function openDice(){
+  const dlg=$("#diceDlg"), c=dmMode?null:C();
+  const mine=(db?rolls:localRolls).filter(r=>r.char===(c?c.id:"")).slice(0,5);
+  dlg.innerHTML=`<h3 style="margin-top:0">Roll dice${c?" for "+esc(c.name):" as the DM"}</h3>
+    <div class="row" style="margin-bottom:10px"><span class="seg">${[["normal","Normal"],["adv","Advantage"],["dis","Disadvantage"]].map(([k,n])=>`<button data-dice="mode" data-k="${k}" aria-pressed="${rollMode===k}">${n}</button>`).join("")}</span>
+      <label class="row small"><input type="checkbox" data-dice="crit" ${rollCrit?"checked":""}> Critical (double dice)</label></div>
+    <div class="dice">${[4,6,8,10,12,20,100].map(n=>`<button data-dice="add" data-k="d${n}">d${n}</button>`).join("")}<button data-dice="mod" data-k="1">+1</button></div>
+    <div class="row" style="margin-top:8px;flex-wrap:nowrap"><input id="diceExpr" value="${esc(diceExpr)}" placeholder="e.g. 2d6+3" autocomplete="off" aria-label="Dice to roll">
+      <button data-dice="mod" data-k="-1" aria-label="Minus one">−1</button><button data-dice="clear">Clear</button></div>
+    <label class="f" style="margin-top:8px">What's it for? (optional)<input id="diceLabel" placeholder="e.g. Fireball damage"></label>
+    <p class="muted small">Advantage and critical also apply to the next roll you tap on the sheet.</p>
+    ${mine.length?`<div class="small"><b>Recent</b><ul style="margin:4px 0;padding-left:18px">${mine.map(r=>`<li>${esc(r.label)}: <b>${r.total}</b> <span class="muted">${esc(r.detail)}</span></li>`).join("")}</ul></div>`:""}
+    <div class="toolbar" style="justify-content:flex-end"><button data-dice="close">Close</button><button class="primary" data-dice="roll">Roll</button></div>`;
+  dlg.showModal();
+}
+$("#diceDlg").addEventListener("input",e=>{ if(e.target.id==="diceExpr") diceExpr=e.target.value; });
+$("#diceDlg").addEventListener("change",e=>{ if(e.target.dataset.dice==="crit"){ rollCrit=e.target.checked; fabMode(); } });
+$("#diceDlg").addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="diceExpr"){ e.preventDefault(); $("#diceDlg [data-dice=roll]").click(); } });
+$("#diceDlg").addEventListener("click",e=>{
+  const b=e.target.closest("[data-dice]"); if(!b||b.dataset.dice==="crit") return;
+  const k=b.dataset.k, inp=$("#diceExpr");
+  switch(b.dataset.dice){
+    case "close": $("#diceDlg").close(); return;
+    case "mode": rollMode=k; fabMode(); b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b)); return;
+    case "add": { const m=new RegExp("(^|[+-])(\\d*)"+k+"(?!\\d)").exec(diceExpr);
+      diceExpr = m ? diceExpr.slice(0,m.index)+m[1]+((+(m[2]||1))+1)+k+diceExpr.slice(m.index+m[0].length) : (diceExpr?diceExpr+"+":"")+"1"+k;
+      inp.value=diceExpr; return; }
+    case "mod": { const m=/([+-]\d+)$/.exec(diceExpr); const v=(m?+m[1]:0)+(+k);
+      diceExpr=(m?diceExpr.slice(0,m.index):diceExpr)+(v?(v>0?"+":"")+v:""); inp.value=diceExpr; return; }
+    case "clear": diceExpr=""; inp.value=""; return;
+    case "roll": { if(!diceExpr.trim()) return toast("Tap some dice first");
+      const r=doRoll(dmMode?null:C(), $("#diceLabel").value.trim()||diceExpr, diceExpr, "custom");
+      if(r) $("#diceDlg").close(); return; }
+  }
+});
+
+/* ---------- whispers ---------- */
+const TRICK_COLORS = {"I'jin":"#7A4FB5","Kubazan":"#3E8E41","Moa":"#C99A10","Nangnang":"#A87B12","Obo'laka":"#C75B8A","Papazotl":"#5D4037","Shagambi":"#2E6DA4","Unkh":"#607D8B","Wongo":"#E0712D"};
+const LS_W = "hivekeeper.v1.whispers";
+let whispers=[], localWhispers=[], personas={}, wsettings={dmSees:true}, notified=new Set(), composeTo=[];
+function loadWhispersLocal(){
+  try{ const s=JSON.parse(localStorage.getItem(LS_W)||"{}"); localWhispers=s.list||[]; notified=new Set(s.notified||[]);
+    if(!db){ personas=s.personas||{}; wsettings=Object.assign({dmSees:true},s.settings||{}); } }catch(e){}
+}
+function saveWhispersLocal(){
+  try{ localStorage.setItem(LS_W,JSON.stringify({list:localWhispers.slice(0,100),notified:[...notified].slice(-300),personas:db?{}:personas,settings:db?{}:wsettings})); }catch(e){}
+}
+const slug = t=>String(t).toLowerCase().replace(/[^a-z0-9]+/g,"");
+function personaList(){
+  const base=[{id:"dm",name:"The DM",color:"#34495E"},...TRICKSTERS.map(n=>({id:"tg-"+slug(n),name:n,color:TRICK_COLORS[n],god:true}))];
+  const list=base.map(b=>Object.assign({},b,personas[b.id]||{}));
+  Object.entries(personas).forEach(([id,p])=>{ if(!list.some(x=>x.id===id) && !p.removed) list.push(Object.assign({id},p)); });
+  return list;
+}
+function savePersona(id,patch){
+  const next=Object.assign({},personaList().find(x=>x.id===id)||{id},personas[id]||{},patch);
+  personas[id]=next;
+  if(db) db.doc("personas/"+id).set(clone(next)).catch(()=>toast("Couldn't save that sender"));
+  else saveWhispersLocal();
+  if($("#whisperDlg").open && $("#whisperDlg").dataset.view==="personas") openPersonas();
+  if(dmMode) renderAll();
+}
+function saveWSettings(patch){
+  wsettings=Object.assign({},wsettings,patch);
+  if(db) db.doc("settings/whispers").set(clone(wsettings)).catch(()=>{}); else saveWhispersLocal();
+  refreshWlog();
+}
+const allWhispers = ()=>[...(db?whispers:[]),...localWhispers.filter(w=>!db||!whispers.some(x=>x.id===w.id))].sort((a,b)=>b.at-a.at);
+function thumb(media,letter,color,size=44){
+  const src=media?portraitSrc(media):"";
+  const inner=!src?esc(letter):media.kind==="video"?`<video src="${esc(src)}" autoplay muted loop playsinline></video>`:`<img src="${esc(src)}" alt="">`;
+  return `<span class="thumb" style="--pc:${esc(color||"#555")};width:${size}px;height:${Math.round(size*1.1547)}px;font-size:${Math.round(size*.45)}px">${inner}</span>`;
+}
+function senderOf(w){ // looked up live, so a new portrait or image shows everywhere
+  if(w.from.kind==="char"){ const c=chars.find(x=>x.id===w.from.id); return {name:c?c.name:w.from.name, media:c?c.look.portrait:null, color:c?c.look.primary:w.from.color}; }
+  const p=personaList().find(x=>x.id===w.from.id);
+  return {name:p?p.name:w.from.name, media:p&&p.img?p.img:null, color:(p&&p.color)||w.from.color};
+}
+const senderThumb = (w,size)=>{ const s=senderOf(w); return thumb(s.media,(s.name||"?").charAt(0).toUpperCase(),s.color,size); };
+const nameOf = id=>(chars.find(c=>c.id===id)||{}).name||"Someone";
+function patchWhisper(w,patch){
+  Object.assign(w,patch);
+  const loc=localWhispers.find(x=>x.id===w.id); if(loc) Object.assign(loc,patch);
+  if(db && !loc) db.doc("whispers/"+w.id).update(clone(patch)).catch(()=>{});
+  saveWhispersLocal();
+}
+function unreadFor(cid){ return allWhispers().filter(w=>(w.to||[]).includes(cid) && !(w.readBy||{})[cid]); }
+function updateBadge(){
+  const b=$("#inboxBadge"); if(!b) return;
+  const n = dmMode ? 0 : unreadFor(cur).length;
+  b.innerHTML = n ? `<span class="badge">${n}</span>` : "";
+  $("#inboxBtn").hidden = dmMode;
+}
+function whispersChanged(){ updateBadge(); checkWhispers(); refreshWlog(); if($("#whisperDlg").open && $("#whisperDlg").dataset.view==="inbox") openInbox(); }
+function checkWhispers(){
+  if(dmMode) return;
+  const c=C(); if(!c) return;
+  const fresh=unreadFor(c.id).filter(w=>!notified.has(w.id+":"+c.id));
+  if(!fresh.length) return;
+  fresh.forEach(w=>notified.add(w.id+":"+c.id)); saveWhispersLocal();
+  const w=fresh[0], s=senderOf(w);
+  notify("whisper", `${c.name}, a whisper from ${s.name}`, fresh.length>1?`${fresh.length} unread. Tap to read.`:"Tap to read.", s.color,
+    {thumb:senderThumb(w,48), onclick:()=>openWhisper(w.id), ms:9000});
+}
+function openWhisper(id){
+  const w=allWhispers().find(x=>x.id===id); if(!w) return;
+  const c=C(), dlg=$("#whisperDlg"), s=senderOf(w), mine=(w.to||[]).includes(c.id);
+  const faded = mine && (w.fadedFor||{})[c.id];
+  dlg.dataset.view="read"; dlg.dataset.id=id;
+  dlg.innerHTML=`<div class="note">
+      <div class="row" style="flex-wrap:nowrap">${senderThumb(w,72)}<div><div class="small muted">A whisper from</div><b style="font-family:var(--display);font-size:24px">${esc(s.name)}</b>
+        <div class="small muted">to ${esc((w.to||[]).map(nameOf).join(", "))}, ${ago(w.at)}</div></div></div>
+      <div class="msg">${faded?'<i class="muted">This whisper has faded.</i>':esc(w.text)}</div>
+      ${w.oneTime&&mine&&!faded?'<div class="small muted">This whisper will fade when you close it.</div>':""}
+    </div>
+    <div class="toolbar" style="justify-content:flex-end">
+      ${mine&&w.from.kind==="char"&&!dmMode?`<button data-w="reply" data-id="${w.id}">Reply</button>`:""}
+      <button class="primary" data-w="closeread">Close</button></div>`;
+  if(!dlg.open) dlg.showModal();
+  if(mine && !(w.readBy||{})[c.id]){
+    const patch={readBy:Object.assign({},w.readBy,{[c.id]:Date.now()})};
+    if(w.effect && !(w.appliedFor||{})[c.id]){ applyWhisperEffect(c,w,s); patch.appliedFor=Object.assign({},w.appliedFor,{[c.id]:true}); }
+    patchWhisper(w,patch); updateBadge();
+  }
+}
+function applyWhisperEffect(c,w,s){ // applied quietly: the player has to notice
+  const e=w.effect;
+  if(e.kind==="quirk" && e.text) c.quirks.push({id:uid(),text:e.text,source:s.name,key:true});
+  if(e.kind==="condition" && CONDS[e.name] && !c.conditions.some(x=>x.name===e.name)) c.conditions.push({id:uid(),name:e.name,source:s.name,level:e.name==="exhaustion"?1:0});
+  queueSave(c); renderAll();
+}
+function openInbox(){
+  const c=C(), dlg=$("#whisperDlg"); dlg.dataset.view="inbox";
+  const got=allWhispers().filter(w=>(w.to||[]).includes(c.id)), sent=allWhispers().filter(w=>w.from.kind==="char"&&w.from.id===c.id);
+  const row=(w,inbound)=>{ const unread=inbound&&!(w.readBy||{})[c.id], faded=inbound&&(w.fadedFor||{})[c.id], s=senderOf(w);
+    const seen=!inbound?(w.to||[]).filter(t=>(w.readBy||{})[t]).map(nameOf):[];
+    return `<button class="wrow ${unread?"unread":""}" data-w="open" data-id="${w.id}">${inbound?senderThumb(w,36):thumb(null,"→",c.look.primary,36)}
+      <span class="grow"><b>${inbound?esc(s.name):"To "+esc((w.to||[]).map(nameOf).join(", "))}</b> <span class="small muted">${ago(w.at)}</span>
+      <span class="snip">${unread?"Unread":faded?"Faded":esc(w.text)}${!inbound?` (${seen.length?"read by "+esc(seen.join(", ")):"not read yet"})`:""}</span></span></button>`; };
+  dlg.innerHTML=`<h3 style="margin-top:0">${esc(c.name)}'s whispers</h3>
+    <div class="toolbar"><button class="primary" data-w="compose">New whisper</button></div>
+    ${got.length?got.map(w=>row(w,true)).join(""):'<div class="empty">No whispers yet.</div>'}
+    ${sent.length?`<h3>Sent</h3>${sent.slice(0,10).map(w=>row(w,false)).join("")}`:""}
+    <div class="toolbar" style="justify-content:flex-end"><button data-w="close">Close</button></div>`;
+  if(!dlg.open) dlg.showModal();
+}
+function openCompose(toId, fromPersona){
+  const dlg=$("#whisperDlg"); dlg.dataset.view="compose";
+  const me=dmMode?null:C();
+  composeTo = toId ? [toId] : composeTo.filter(id=>!me||id!==me.id);
+  const targets=chars.filter(x=>!x.fresh && (!me||x.id!==me.id) && !(dmMode&&dmHidden.has(x.id)));
+  const pl=personaList(), fp=fromPersona||dlg.dataset.persona||"dm";
+  dlg.dataset.persona=fp;
+  const p=pl.find(x=>x.id===fp)||pl[0];
+  dlg.innerHTML=`<h3 style="margin-top:0">New whisper</h3>
+    <div class="row" style="flex-wrap:nowrap;margin-bottom:10px">${me?thumb(me.look.portrait,me.name.charAt(0),me.look.primary,48):thumb(p.img,p.name.charAt(0),p.color,48)}
+      ${me?`<div><div class="small muted">From</div><b>${esc(me.name)}</b></div>`
+        :`<label class="f" style="flex:1">From<select id="wFrom">${pl.map(x=>`<option value="${x.id}" ${x.id===p.id?"selected":""}>${esc(x.name)}${x.god?" (trickster god)":""}</option>`).join("")}</select></label>`}</div>
+    <div class="small muted">To</div>
+    <div class="condgrid" style="margin:4px 0 10px">${targets.map(t=>`<button data-w="to" data-id="${t.id}" aria-pressed="${composeTo.includes(t.id)}" class="row" style="flex-wrap:nowrap;gap:6px">${thumb(t.look.portrait,t.name.charAt(0),t.look.primary,22)}${esc(t.name)}</button>`).join("")}</div>
+    <label class="f">Message<textarea id="wText" style="min-height:110px">${esc(dlg.dataset.draft||"")}</textarea></label>
+    ${dmMode?`<label class="row small" style="margin-top:8px"><input type="checkbox" id="wOnce"> Fades after it's read</label>
+      <div class="fields" style="margin-top:8px"><label class="f">When opened, also…<select id="wEff"><option value="">Nothing</option><option value="quirk">Add a quirk</option><option value="condition">Add a condition</option></select></label>
+      <label class="f" id="wEffQ" hidden>Quirk text<input id="wQuirk" placeholder="e.g. Hears whispering from the book"></label>
+      <label class="f" id="wEffC" hidden>Condition<select id="wCond">${Object.keys(CONDS).map(k=>`<option value="${k}">${cap(k)}</option>`).join("")}</select></label></div>
+      <p class="muted small">Effects are added quietly, with no alert, so the player has to notice.</p>`
+      : (wsettings.dmSees?'<p class="muted small">The DM can read whispers between players.</p>':"")}
+    <div class="toolbar" style="justify-content:flex-end"><button data-w="${me?"inboxback":"close"}">Cancel</button><button class="primary" data-w="send">Send whisper</button></div>`;
+  if(!dlg.open) dlg.showModal();
+}
+function sendWhisper(){
+  const dlg=$("#whisperDlg"), text=$("#wText").value.trim();
+  if(!composeTo.length) return toast("Pick who gets the whisper");
+  if(!text) return toast("Write a message first");
+  const me=dmMode?null:C();
+  let from;
+  if(me) from={kind:"char",id:me.id,name:me.name,color:me.look.primary};
+  else { const p=personaList().find(x=>x.id===$("#wFrom").value)||personaList()[0]; from={kind:"persona",id:p.id,name:p.name,color:p.color}; }
+  const aud=new Set([me?me.uid:"", appSettings.dm].filter(Boolean));
+  composeTo.forEach(id=>{ const t=chars.find(x=>x.id===id); if(t&&t.owner) aud.add(t.owner); });
+  const w={id:uid()+uid(), from, to:[...composeTo], text, at:Date.now(), readBy:{}, fadedFor:{}, appliedFor:{}, oneTime:false, effect:null, byDm:dmMode, audience:[...aud]};
+  if(dmMode){
+    w.oneTime=$("#wOnce").checked;
+    const k=$("#wEff").value;
+    if(k==="quirk" && $("#wQuirk").value.trim()) w.effect={kind:"quirk",text:$("#wQuirk").value.trim()};
+    if(k==="condition") w.effect={kind:"condition",name:$("#wCond").value};
+  }
+  if(db) db.doc("whispers/"+w.id).set(clone(w)).catch(()=>{ localWhispers.unshift(w); saveWhispersLocal(); });
+  else { localWhispers.unshift(w); saveWhispersLocal(); whispersChanged(); }
+  dlg.dataset.draft=""; composeTo=[];
+  toast(`Whisper sent to ${w.to.map(nameOf).join(", ")}`);
+  if(me) openInbox(); else dlg.close();
+}
+function openPersonas(){
+  const dlg=$("#whisperDlg"); dlg.dataset.view="personas";
+  dlg.innerHTML=`<h3 style="margin-top:0">Whisper senders</h3>
+    <p class="muted small">Give each sender an image, like a trickster god's idol. It appears in the whisper alert and the note.</p>
+    ${personaList().map(p=>`<div class="panel row" style="margin:6px 0;flex-wrap:nowrap">${thumb(p.img,p.name.charAt(0),p.color,44)}
+      <div style="flex:1;min-width:0"><b>${esc(p.name)}</b>
+        <div class="row small" style="margin-top:4px">
+          <label style="position:relative;overflow:hidden" class="ghost"><span style="text-decoration:underline;cursor:pointer">${p.img?"Change image":"Add image"}</span><input type="file" accept="image/*,video/mp4,video/webm" data-personaimg="${p.id}" style="position:absolute;inset:0;opacity:0"></label>
+          ${p.img?`<button class="ghost small" data-w="pnoimg" data-id="${p.id}">Remove image</button>`:""}
+          <input type="color" value="${esc(p.color||"#555555")}" data-personacolor="${p.id}" aria-label="Color for ${esc(p.name)}" style="width:44px;height:30px">
+          ${p.custom?`<button class="danger ghost small" data-w="pdel" data-id="${p.id}">Remove</button>`:""}</div></div></div>`).join("")}
+    <div class="row" style="margin-top:10px;flex-wrap:nowrap"><input id="pNew" placeholder="Add a sender, e.g. Gorra's journal"><button data-w="padd">Add</button></div>
+    <div class="toolbar" style="justify-content:flex-end"><button class="primary" data-w="close">Done</button></div>`;
+  if(!dlg.open) dlg.showModal();
+}
+function wlogHTML(){
+  const list=allWhispers().filter(w=>w.byDm || w.from.kind!=="char" || wsettings.dmSees).slice(0,40);
+  if(!list.length) return '<div class="empty">No whispers yet.</div>';
+  return list.map(w=>{ const s=senderOf(w), read=(w.to||[]).map(t=>`${esc(nameOf(t))} ${(w.readBy||{})[t]?"✓":"(unread)"}`).join(", ");
+    return `<div class="roll" style="--pc:${esc(s.color)}"><div class="row" style="flex-wrap:nowrap">${senderThumb(w,30)}<b style="flex:1">${esc(s.name)}</b><span class="small muted">${ago(w.at)}</span></div>
+      <div style="white-space:pre-wrap;margin:4px 0">${esc(w.text)}</div>
+      <div class="small muted">To ${read}${w.oneTime?", fades after reading":""}${w.effect?`, adds ${w.effect.kind==="quirk"?"a quirk":w.effect.name}`:""}</div></div>`; }).join("");
+}
+function refreshWlog(){ const e=$("#wlog"); if(e) e.innerHTML=wlogHTML(); }
+$("#whisperDlg").addEventListener("change",e=>{
+  if(e.target.id==="wFrom") openCompose(null,e.target.value);
+  if(e.target.id==="wEff"){ $("#wEffQ").hidden=e.target.value!=="quirk"; $("#wEffC").hidden=e.target.value!=="condition"; }
+});
+$("#whisperDlg").addEventListener("input",e=>{ if(e.target.id==="wText") $("#whisperDlg").dataset.draft=e.target.value; });
+$("#whisperDlg").addEventListener("close",()=>{ const dlg=$("#whisperDlg"); if(dlg.dataset.view==="read") fadeIfNeeded(dlg.dataset.id); });
+function fadeIfNeeded(id){
+  const w=allWhispers().find(x=>x.id===id), c=C(); if(!w||dmMode) return;
+  if(w.oneTime && (w.to||[]).includes(c.id) && !(w.fadedFor||{})[c.id]) patchWhisper(w,{fadedFor:Object.assign({},w.fadedFor,{[c.id]:true})});
+}
+$("#whisperDlg").addEventListener("click",e=>{
+  const b=e.target.closest("[data-w]"); if(!b) return;
+  const dlg=$("#whisperDlg"), id=b.dataset.id;
+  switch(b.dataset.w){
+    case "close": dlg.close(); return;
+    case "closeread": dlg.close(); if(!dmMode){ fadeIfNeeded(dlg.dataset.id); } return;
+    case "open": fadeIfNeeded(dlg.dataset.id); openWhisper(id); return;
+    case "compose": composeTo=[]; dlg.dataset.draft=""; openCompose(); return;
+    case "reply": { fadeIfNeeded(dlg.dataset.id); const w=allWhispers().find(x=>x.id===id); composeTo=[w.from.id]; dlg.dataset.draft=""; openCompose(); return; }
+    case "inboxback": openInbox(); return;
+    case "to": composeTo = composeTo.includes(id) ? composeTo.filter(x=>x!==id) : [...composeTo,id]; b.setAttribute("aria-pressed",composeTo.includes(id)); return;
+    case "send": sendWhisper(); return;
+    case "padd": { const n=$("#pNew").value.trim(); if(!n) return; savePersona("p-"+uid(),{name:n,color:"#6D4C41",custom:true}); return; }
+    case "pdel": if(confirm("Remove this sender?")) savePersona(id,{removed:true}); return;
+    case "pnoimg": savePersona(id,{img:null}); return;
+  }
+});
+
+/* ---------- DM screen ---------- */
+let dmMode=false, dmHidden=new Set(), senseFilter="";
+try{ const s=JSON.parse(localStorage.getItem("hivekeeper.v1.dm")||"{}"); dmMode=!!s.on; dmHidden=new Set(s.hidden||[]); }catch(e){}
+function saveDm(){ try{ localStorage.setItem("hivekeeper.v1.dm",JSON.stringify({on:dmMode,hidden:[...dmHidden]})); }catch(e){} }
+function onRolls(snap){
+  const list=snap.docs.filter(x=>x.exists).map(x=>x.data());
+  const before=rolls[0]; rolls=list;
+  if(dmMode){ refreshFeed(); if(list[0] && before && list[0].at>before.at && prefs.sound){ const ctx=audio(); if(ctx) try{ rattle(ctx); }catch(e){} } }
+}
+function ago(t){ const s=Math.round((Date.now()-t)/1000); return s<45?"just now":s<3600?Math.round(s/60)+" min ago":Math.round(s/3600)+" h ago"; }
+function feedHTML(){
+  const list=[...(db?rolls:[]),...localRolls].sort((a,b)=>b.at-a.at).slice(0,40);
+  if(!list.length) return `<div class="empty">No rolls yet. Rolls from every sheet appear here as they happen.</div>`;
+  return list.map(r=>`<div class="roll ${r.at>Date.now()-5000?"new":""}" style="--pc:${esc(r.color)}">
+    <div class="row"><b>${esc(r.name||"DM")}</b><span class="small muted" style="margin-left:auto">${ago(r.at)}</span></div>
+    <div class="row" style="flex-wrap:nowrap"><span style="flex:1">${esc(r.label)}${r.mode==="adv"?' <span class="tag">Adv</span>':r.mode==="dis"?' <span class="tag">Dis</span>':""}${r.crit?' <span class="tag h">Crit</span>':""}</span>
+      <b class="rt ${r.nat===20?"n20":r.nat===1?"n1":""}">${num(r.total)}</b></div>
+    <div class="small muted">${esc(r.detail)}</div></div>`).join("");
+}
+function refreshFeed(){ const f=$("#feed"); if(f) f.innerHTML=feedHTML(); }
+setInterval(()=>{ if(dmMode) refreshFeed(); },30000);
+function dmCard(c){
+  const d=compute(c), col=/^#[0-9a-f]{6}$/i.test(c.look.primary)?c.look.primary:"#1E6B4B";
+  const on=x=>x.active!==false;
+  const match=!senseFilter || c.senses.some(x=>on(x)&&x.type===senseFilter);
+  const pct=d.hpmax?Math.max(0,Math.min(100,d.hpcur/d.hpmax*100)):0;
+  const caster=c.spells.length||c.classes.some(k=>k.caster!=="none");
+  const pt=c.look.portrait, src=portraitSrc(pt);
+  const mp = src ? (pt.kind==="video"?`<video src="${esc(src)}" autoplay muted loop playsinline></video>`:`<img src="${esc(src)}" alt="">`) : esc((c.name||"?").charAt(0).toUpperCase());
+  const tags=[...new Set(c.features.filter(f=>f.tag&&tagOn(c,f.tag)).map(f=>f.tag))];
+  const cls=c.classes.map(k=>`${k.subclass?k.subclass+" ":""}${k.name} ${num(k.level)}`).join(" / ");
+  const quirks=c.quirks.filter(q=>q.key&&q.text);
+  return `<article class="dmcard ${match?"":"dim"}" style="--pc:${col}">
+    <header><div class="mp">${mp}</div><div style="min-width:0"><b style="font-size:18px">${esc(c.name)}</b><div class="small muted">${esc(c.race)}, ${esc(cls)}</div></div></header>
+    <div class="row" style="align-items:baseline"><b class="hpnum">${d.hpcur}</b><span class="muted">/ ${d.hpmax} HP</span>${d.hptemp?`<span class="tag h">+${d.hptemp} temp</span>`:""}
+      ${d.hpcur===0?`<span class="tag" style="margin-left:auto">Death saves ${num(c.death.s)} ✓ ${num(c.death.f)} ✗</span>`:""}</div>
+    <div class="hpbar"><i style="width:${pct}%;${pct<=25?"background:var(--danger)":""}"></i></div>
+    <div class="mini"><span>AC <b>${d.ac}</b></span><span>Passive Perception <b>${d.passive}</b></span><span>Init <b>${d.init}</b></span>${caster?`<span>Spell DC <b>${d.spelldc}</b></span>`:""}</div>
+    <div class="small muted">Saves: ${AB.map(a=>`${a.toUpperCase()} ${d["save:"+a]}`).join(", ")}</div>
+    ${(c.conditions.length||tags.length)?`<div class="chips">${tags.map(t=>`<span class="cond" style="background:var(--honey-soft)">${esc(cap(t))}</span>`).join("")}${c.conditions.map(x=>`<button class="cond${x.name==="hidden"?" stealth":""}" data-act="condinfo" data-id="${x.id}" data-char="${c.id}"><i style="background:${(CONDS[x.name]||["#888"])[0]}"></i>${esc(cap(condLabel(x)))}</button>`).join("")}</div>`:""}
+    <div class="chips">${c.senses.filter(on).map(x=>`<span class="tag ${x.type===senseFilter?"h":""}">${esc(x.type==="Other"?(x.label||"Other"):x.type)}${num(x.range)?" "+num(x.range)+" ft":""}</span>`).join("")||'<span class="small muted">Normal sight</span>'}
+      ${c.defenses.filter(on).map(x=>`<span class="tag">${DKIND[x.kind]}: ${esc(x.type)}</span>`).join("")}</div>
+    ${c.trickster.god||quirks.length?`<div class="small">${c.trickster.god?`<b>${esc(c.trickster.god)}</b> `:""}${quirks.map(q=>`<i>${esc(q.text)}</i>`).join(", ")}</div>`:""}
+    <div class="toolbar" style="margin:0"><button class="primary small" data-act="dmhp" data-char="${c.id}">Damage or heal</button><button class="small" data-act="dmcond" data-char="${c.id}">Condition</button><button class="small" data-act="dmwhisper" data-char="${c.id}">Whisper</button>
+      <button class="ghost small" data-act="dmopen" data-char="${c.id}">Sheet</button><button class="ghost small" data-act="dmhide" data-char="${c.id}">Hide card</button></div>
+  </article>`;
+}
+function renderDM(){
+  document.body.classList.remove("hidden-mode");
+  applyTheme({look:{primary:"#1E6B4B",accent:"#E2A93A",font:"Fraunces"}});
+  $("#charPick").innerHTML = chars.map(x=>`<option value="${x.id}" ${x.id===cur?"selected":""}>${esc(x.name||"Unnamed")}</option>`).join("");
+  $("#tabs").innerHTML="";
+  $("#hero").innerHTML=`<div class="hero" style="grid-template-columns:1fr auto"><div><div style="font-family:var(--display);font-size:clamp(28px,6vw,44px);font-weight:700;line-height:1.1">Dungeon Master</div>
+    <div class="sub">Live party view and roll feed</div></div><button data-act="dmexit">Back to sheets</button></div>`;
+  const party=chars.filter(c=>!dmHidden.has(c.id));
+  const kinds=["Darkvision","Blindsight","Tremorsense","Truesight","See invisibility","Devil's sight"];
+  const count=k=>party.filter(c=>c.senses.some(x=>x.active!==false&&x.type===k)).length;
+  $("#view").innerHTML=`<div class="dmgrid">
+    <section><h2>Party</h2>
+      <div class="toolbar"><span class="small muted">Who has</span>${kinds.map(k=>`<button class="small" data-act="dmsense" data-k="${esc(k)}" aria-pressed="${senseFilter===k}" style="${senseFilter===k?"border:2px solid var(--emerald);font-weight:700":""}">${k} (${count(k)})</button>`).join("")}</div>
+      <div class="cards">${party.map(dmCard).join("")||'<div class="empty">No characters to show.</div>'}</div>
+      ${dmHidden.size?`<div class="toolbar"><button class="ghost small" data-act="dmshowall">Show ${dmHidden.size} hidden card${dmHidden.size>1?"s":""}</button></div>`:""}
+    </section>
+    <section class="feedcol"><h2>Rolls</h2><div id="feed">${feedHTML()}</div>
+      <h2>Whispers</h2>
+      <div class="toolbar"><button class="primary small" data-act="dmwhisper">New whisper</button><button class="small" data-act="personas">Whisper senders</button></div>
+      <label class="row small"><input type="checkbox" id="dmSees" ${wsettings.dmSees?"checked":""}> Show whispers between players here</label>
+      <div id="wlog">${wlogHTML()}</div></section>
+  </div>`;
+}
+
+/* ---------- conditions ---------- */
+const tagOn = (c,tag)=>!!tag && [...c.bonuses,...c.defenses].some(x=>x.tag===tag && x.active!==false);
+function condStrip(c){
+  const seen=new Set(), live=c.features.filter(f=>f.tag && tagOn(c,f.tag) && !seen.has(f.tag) && seen.add(f.tag));
+  const hidden=c.conditions.find(x=>x.name==="hidden");
+  const canHide=!hidden && c.features.some(f=>/\bhide\b/i.test(f.desc||""));
+  return `<div class="conds">${canHide?`<button class="small" data-act="hide">Hide</button>`:""}${live.map(f=>`<button class="cond" data-act="ftoggle" data-id="${f.id}" style="border-color:var(--honey-fill);background:var(--honey-soft)"><i style="background:var(--honey-fill)"></i>${esc(cap(f.tag))} (tap to end)</button>`).join("")}${c.conditions.map(x=>`<button class="cond${x.name==="hidden"?" stealth":""}" data-act="condinfo" data-id="${x.id}"><i style="background:${(CONDS[x.name]||["#888"])[0]}"></i>${esc(cap(condLabel(x)))}</button>`).join("")}
+    <button class="ghost small" data-act="addcond">${c.conditions.length?"Add condition":"Add a condition"}</button></div>`;
+}
+const dlgChar = ()=>chars.find(x=>x.id===$("#condDlg").dataset.char)||C();
+function openCondPicker(charId){
+  const dlg=$("#condDlg"); dlg.dataset.char=charId||cur; const c=dlgChar();
+  dlg.innerHTML = `<h3 style="margin-top:0">Add a condition${charId?" for "+esc(c.name):""}</h3>
+    <label class="f">Caused by (optional)<input id="condSrc" placeholder="e.g. Yuan-ti venom, until end of next turn"></label>
+    <div class="condgrid" style="margin-top:10px">${Object.keys(CONDS).map(k=>`<button data-cond="${k}" aria-pressed="${c.conditions.some(x=>x.name===k)}"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${CONDS[k][0]};margin-right:6px"></span>${cap(k)}</button>`).join("")}</div>
+    <div class="toolbar" style="justify-content:flex-end"><button data-cond="close">Done</button></div>`;
+  dlg.showModal();
+}
+function openHide(){
+  const dlg=$("#condDlg"); dlg.dataset.char=cur;
+  dlg.innerHTML=`<h3 style="margin-top:0">Hide</h3>
+    <label class="f">Stealth roll (optional, for the DM)<input type="number" id="hideRoll" inputmode="numeric" placeholder="Total"></label>
+    <div class="toolbar"><button data-cond="hideroll">Roll for me (Stealth <span data-out="skill:stealth">${compute(C())["skill:stealth"]}</span>)</button></div>
+    <div class="toolbar" style="justify-content:flex-end"><button data-cond="close">Cancel</button><button class="primary" data-cond="hidego">Hide</button></div>`;
+  dlg.showModal();
+}
+function openCondInfo(id,charId){
+  const dlg=$("#condDlg"); dlg.dataset.char=charId||cur; const c=dlgChar(), x=c.conditions.find(y=>y.id===id); if(!x) return;
+  dlg.innerHTML = `<h3 style="margin-top:0">${esc(cap(x.name))}</h3>
+    ${x.source?`<p class="muted">${esc(x.source)}</p>`:""}
+    <p>${esc(CONDS[x.name][1])}</p>
+    ${x.name==="exhaustion"?`<div class="row"><button data-cond="exh-">−</button><b>Level ${num(x.level)||1}</b><button data-cond="exh+">+</button></div>`:""}
+    <div class="toolbar" style="justify-content:flex-end"><button class="danger" data-cond="remove" data-id="${x.id}">${x.name==="hidden"?"Reveal":"Remove condition"}</button><button data-cond="close">Close</button></div>`;
+  dlg.dataset.id=id; dlg.showModal();
+}
+$("#condDlg").addEventListener("click",e=>{
+  const b=e.target.closest("[data-cond]"); if(!b) return; e.stopPropagation();
+  const c=dlgChar(), k=b.dataset.cond, dlg=$("#condDlg"), prev=clone(c);
+  if(k==="close"){ dlg.close(); return; }
+  if(k==="dmdmg"||k==="dmheal"||k==="dmtemp"){
+    const amt=Math.floor(num($("#dmAmt").value)); if(amt<=0) return toast("Enter an amount");
+    const mx=compute(c).hpmax, before={cur:num(c.hp.cur),temp:num(c.hp.temp),death:clone(c.death),conds:clone(c.conditions)};
+    if(k==="dmdmg") applyDamage(c,[{amt,type:$("#dmType").value}],$("#dmMag").checked,mx);
+    else if(k==="dmheal"){ c.hp.cur=Math.min(mx,before.cur+amt); if(before.cur===0){ c.death={s:0,f:0}; c.conditions=c.conditions.filter(x=>!(x.name==="unconscious"&&/0 HP/.test(x.source))); } logHp(c,`Healed ${c.hp.cur-before.cur} (rolled ${amt})`,before); }
+    else { if(amt<=before.temp) return toast(`Temp HP doesn't stack. ${c.name} keeps ${before.temp}.`); c.hp.temp=amt; logHp(c,`Temp HP set to ${amt}`,before); }
+    dlg.close(); toast(`${c.name}: ${c.hpLog[0].text.split(". ")[0]}`); queueSave(c); renderAll(); return;
+  }
+  if(k==="hideroll"){ const r=1+Math.floor(Math.random()*20); $("#hideRoll").value=r+num(compute(c)["skill:stealth"]); toast(`Rolled ${r} on the d20`); return; }
+  if(k==="hidego"){ const v=$("#hideRoll").value; c.conditions.push({id:uid(),name:"hidden",source:"Hide action",level:0,roll:v?num(v):""}); dlg.close(); }
+  else
+  if(k==="remove"){ c.conditions=c.conditions.filter(x=>x.id!==b.dataset.id); dlg.close(); }
+  else if(k==="exh+"||k==="exh-"){ const x=c.conditions.find(y=>y.id===dlg.dataset.id); x.level=Math.max(1,Math.min(10,(num(x.level)||1)+(k==="exh+"?1:-1))); openCondInfo(x.id,c.id); }
+  else if(c.conditions.some(x=>x.name===k)){ c.conditions=c.conditions.filter(x=>x.name!==k); b.setAttribute("aria-pressed","false"); }
+  else { c.conditions.push({id:uid(),name:k,source:$("#condSrc").value.trim(),level:k==="exhaustion"?1:0}); b.setAttribute("aria-pressed","true"); }
+  queueSave(c); const y=scrollY; renderAll(); scrollTo(0,y);
+  if(!dmMode && c.id===cur) announceChanges(prev,c);
+});
+function openDmHp(charId){
+  const dlg=$("#condDlg"); dlg.dataset.char=charId; const c=dlgChar();
+  dlg.innerHTML=`<h3 style="margin-top:0">${esc(c.name)}: ${num(c.hp.cur)} / ${compute(c).hpmax} HP${num(c.hp.temp)?` (+${num(c.hp.temp)} temp)`:""}</h3>
+    ${c.defenses.filter(x=>x.active!==false).length?`<p class="small">${c.defenses.filter(x=>x.active!==false).map(x=>DKIND[x.kind]+": "+esc(x.type)).join(", ")}</p>`:""}
+    <div class="fields"><label class="f">Amount<input type="number" id="dmAmt" inputmode="numeric" min="0"></label>
+    <label class="f">Damage type<select id="dmType">${DTYPES.map(t=>`<option>${t}</option>`).join("")}</select></label></div>
+    <label class="row small" style="margin-top:8px"><input type="checkbox" id="dmMag"> Magical attack</label>
+    <div class="toolbar" style="justify-content:flex-end"><button data-cond="close">Cancel</button><button data-cond="dmtemp">Temp HP</button><button data-cond="dmheal">Heal</button><button class="primary" data-cond="dmdmg">Damage</button></div>
+    <p class="muted small">Resistances and temp HP are applied automatically, and the player gets the alert.</p>`;
+  dlg.showModal(); setTimeout(()=>$("#dmAmt").focus(),50);
+}
+
+/* ---------- portraits ---------- */
+let assets = null;
+async function fileToMedia(file, maxPx){ // returns {kind,asset,data} or throws a message
+  const isVid=file.type.startsWith("video/"), isGif=file.type==="image/gif";
+  if(!isVid && !file.type.startsWith("image/")) throw "Choose a picture, GIF, MP4 or WebM file";
+  if(file.size>20*1024*1024) throw "That file is over 20 MB. Try a shorter or smaller clip.";
+  const kind=isVid?"video":"image";
+  if(storage && me){
+    toast("Uploading…");
+    try{ const ref=storage.ref().child(`uploads/${me.uid}/${Date.now()}-${file.name.replace(/[^\w.-]/g,"")}`);
+      await ref.put(file); return {kind,asset:"",data:"",url:await ref.getDownloadURL()}; }
+    catch(e){ if(isVid||isGif) throw "Upload failed. If Firebase Storage isn't switched on yet, use a still picture."; }
+  }
+  if(isVid||isGif){
+    if(file.size>180*1024) throw "Animations only work when the tracker is opened from Claude. Use a still picture here.";
+    const data=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(file);});
+    return {kind,asset:"",data};
+  }
+  try{ // shrink stills so they fit in the saved data
+    const img=await createImageBitmap(file); const sc=Math.min(1,maxPx/Math.max(img.width,img.height));
+    const cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+    cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+    return {kind:"image",asset:"",data:cv.toDataURL("image/jpeg",.85)};
+  }catch(e){ throw "That picture couldn't be read. Try a JPG or PNG."; }
+}
+async function setPortrait(file){
+  const c=C();
+  try{ const m=await fileToMedia(file,420); c.look.portrait={asset:"",url:"",data:"",...m,pos:num(c.look.portrait.pos)||30}; queueSave(c); renderAll(); toast("Portrait saved"); }
+  catch(msg){ toast(String(msg)); }
+}
+
+/* ---------- character menu ---------- */
+let downloads = null;
+$("#menuBtn").onclick=()=>{ renderPrefs(); renderAccess(); $("#dmOnly").hidden=!isDM; $("#dmBtn").hidden=!isDM; $("#menu").showModal(); };
+function addChar(c){ chars.push(c); cur=c.id; queueSave(c); renderAll(); }
+function importText(txt){
+  try{ let c=JSON.parse(txt); if(c.character) c=c.character; if(!c||typeof c!=="object"||!c.abilities) throw 0;
+    c=normalize(c); c.id=uid(); addChar(c); $("#menu").close(); toast("Imported "+c.name); }
+  catch(e){ toast("That text isn't a character from this tracker"); }
+}
+async function menuAct(a){
+  const c=C();
+  if(a==="close") return $("#menu").close();
+  if(a==="new"){ const n=blank(); addChar(n); $("#menu").close(); tab="sheet"; renderAll(); toast("New character created"); }
+  if(a==="dup"){ const n=clone(c); n.id=uid(); n.name=c.name+" (copy)"; addChar(n); $("#menu").close(); toast("Duplicated"); }
+  if(a==="del"){ if(chars.length<2){ toast("Keep at least one character"); return; }
+    if(!confirm(`Delete ${c.name} for good?`)) return;
+    chars=chars.filter(x=>x.id!==c.id); if(db){ try{ await db.doc("characters/"+c.id).delete(); }catch(e){} }
+    cur=chars[0].id; saveLocal(); renderAll(); $("#menu").close(); toast("Deleted"); }
+  const text=JSON.stringify({app:"hivekeeper",version:1,character:c},null,2);
+  if(a==="export"){
+    const blob=new Blob([text],{type:"application/json"}), url=URL.createObjectURL(blob);
+    const a2=document.createElement("a"); a2.href=url; a2.download=(c.name||"character").replace(/[^\w -]/g,"")+".json";
+    document.body.appendChild(a2); a2.click(); a2.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); }
+  if(a==="copy"){ try{ await navigator.clipboard.writeText(text); toast("Copied"); }catch(e){ $("#importText").value=text; $("#importText").select(); toast("Text is in the box below. Copy it from there."); } }
+  if(a==="importText"){ importText($("#importText").value); }
+}
+
+function renderAccess(){
+  const el=$("#accessList"); if(!el) return;
+  const list=appSettings.emails||[];
+  el.innerHTML = list.length ? list.map(e=>`<div class="row small" style="justify-content:space-between"><span>${esc(e)}</span><button class="danger ghost small" data-act="rmEmail" data-k="${esc(e)}">Remove</button></div>`).join("")
+    : '<div class="small muted">No players added yet.</div>';
+}
+async function saveAccess(list){
+  appSettings.emails=list;
+  try{ await db.doc("settings/app").set(Object.assign({},appSettings)); renderAccess(); toast("Player list saved"); }
+  catch(e){ toast("Couldn't save the player list"); }
+}
+async function importParty(text){
+  try{
+    const data=JSON.parse(text); const list=data.characters||[data.character||data];
+    if(!Array.isArray(list)||!list.length) throw 0;
+    let n=0;
+    let skipped=0;
+    for(const raw of list){ const c=normalize(clone(raw)); c.updated=Date.now();
+      const have=chars.find(x=>x.id===c.id);
+      if(have && have.owner){ skipped++; continue; }   // a player already claimed it, leave it alone
+      c.owner=have?have.owner||"":c.owner||"";
+      await db.doc("characters/"+c.id).set(clone(c)); n++; }
+    toast(n?`Imported ${n} character${n>1?"s":""}${skipped?`, skipped ${skipped} already claimed`:""}`:"Nothing imported: those characters are already claimed");
+  }catch(e){ toast("That file isn't a party export"); }
+}
+
+/* ---------- theme ---------- */
+$("#themeBtn").onclick=()=>{ const r=document.documentElement; const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme=dark?"light":"dark"; try{localStorage.setItem(LS+".theme",r.dataset.theme)}catch(e){} };
+try{ const t=localStorage.getItem(LS+".theme"); if(t) document.documentElement.dataset.theme=t; }catch(e){}
+
+/* ---------- start ---------- */
+loadLocal(); loadWhispersLocal(); renderAll(); fabMode(); gate("Starting up…","",false); connectDb(); setTimeout(checkWhispers,800);
+if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+else $("#exportBtn").hidden=true;
+</script>
+</body>
+</html>
