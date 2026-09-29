@@ -1,5 +1,5 @@
 // Bag of Holding service worker: keeps the app shell available offline.
-const CACHE = "boh-v2";
+const CACHE = "boh-v4";
 const SHELL = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", e => {
